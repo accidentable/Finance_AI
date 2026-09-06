@@ -45,6 +45,11 @@ export default function Page() {
         if (!stored.expires || stored.expires < Date.now()) localStorage.removeItem(STORE); else setSaved(true);
       }
     } catch { try { localStorage.removeItem(STORE); } catch {} }
+    const wanted = new URLSearchParams(window.location.search).get('case');
+    const idx = wanted ? SAMPLES.findIndex(x => x.id === wanted) : -1;
+    if (idx >= 0) openSample(idx);
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (idx >= 0 && (tab === 'plan' || tab === 'package' || tab === 'board')) setStage(tab);
     return () => abort.current?.abort();
   }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 3500); return () => clearTimeout(t); }, [toast]);
@@ -80,7 +85,7 @@ export default function Page() {
   function openSample(index: number) {
     const s = SAMPLES[index];
     setPrevious(null); setRevision(1); setStage('diagnose');
-    applyResult(structuredClone(s.result), s.text);
+    applyResult(structuredClone(s.result), s.text, { issuerId: s.issuerId });
     setSlots({ ...s.slots });
   }
   function prepare(text: string) {
@@ -95,7 +100,7 @@ export default function Page() {
     abort.current = controller;
     let finished = false;
     try {
-      const attached = result ? [] : images; // 후속 분석에는 사진을 다시 보내지 않는다. 옮겨 적은 글이 history에 있다.
+      const attached = images; // 후속 분석에도 새로 붙인 사진만 보낸다. 이전 사진은 옮겨 적은 글로 history에 있다.
       const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text, issuerId: issuerId || undefined, images: attached.length ? attached : undefined }), signal: controller.signal });
       if (!response.ok) { const body = await response.json(); throw new Error(body.error || '분석을 시작하지 못했어요.'); }
       const reader = response.body?.getReader();
@@ -245,7 +250,7 @@ export default function Page() {
                   <button className="ghostbtn small" onClick={exportMarkdown}>내보내기 →</button>
                 </div>
               </>
-            ) : <span className="masthead__confirmed"><i className="masthead__dot" />접수 대기 · 첫 72시간</span>}
+            ) : <span className="masthead__confirmed"><i className="masthead__dot" />첫 72시간</span>}
           </div>
         </div>
       </header>
@@ -259,13 +264,14 @@ export default function Page() {
           merchant={merchant} plan={plan} mapping={mapping} evidence={evidence}
           checks={checks} toggle={toggle} txDate={txDate} setTxDate={setTxDate} deadlineRef={deadlineRef} readiness={readiness} form={form}
           issuer={issuer} issuerId={issuerId} setIssuerId={setIssuerId}
-          followup={followup} setFollowup={setFollowup} onFollowup={() => prepare(`${history}\n\n[추가 자료 / 사용자의 새 설명]\n${followup}`)}
+          followup={followup} setFollowup={setFollowup} onFollowup={() => prepare(`${history}\n\n[추가 자료 / 사용자의 새 설명]\n${followup.trim() || '(첨부 사진 참고)'}`)}
+          images={images} onUpload={upload} onRemoveImage={i => setImages(list => list.filter((_, j) => j !== i))}
           busy={busy} error={error} onAnswer={answer} onCopy={copy} onExport={exportMarkdown}
         />
       )}
 
       {busy && <LoadingOverlay stage={loadStage} progress={progress} onCancel={() => { abort.current?.abort(); setBusy(false); }} />}
-      <ReviewDialog review={review} setReview={setReview} onConfirm={() => review !== null && analyze(maskText(review))} onClose={() => setReview(null)} images={result ? [] : images} />
+      <ReviewDialog review={review} setReview={setReview} onConfirm={() => review !== null && analyze(maskText(review))} onClose={() => setReview(null)} images={images} />
       <Toast text={toast} />
     </>
   );

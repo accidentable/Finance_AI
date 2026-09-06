@@ -1,8 +1,10 @@
 'use client';
 
+import { useRef } from 'react';
 import { CASE_LABEL, PAYMENT_LABEL, type CaseResult } from '@/lib/case';
 import type { EvidenceItem, Merchant, Phase, ReasonMapping } from '@/lib/playbook';
 import type { Issuer } from '@/lib/knowledge';
+import { MAX_IMAGES, type ImageInput } from '@/lib/images';
 import { Icon } from './Icon';
 import { IssuerSelect } from './IssuerSelect';
 import { Diagnose } from './Diagnose';
@@ -12,11 +14,11 @@ import { Board } from './Board';
 
 export type Stage = 'diagnose' | 'plan' | 'package' | 'board';
 
-const STAGES: { id: Stage; title: string; caption: string }[] = [
-  { id: 'diagnose', title: '진단', caption: '신호 · 가맹점 · 사실' },
-  { id: 'plan', title: '72시간 계획', caption: '지혈 · 가맹점 · 카드사' },
-  { id: 'package', title: '이의신청 패키지', caption: '사유코드 · 증빙 · 초안' },
-  { id: 'board', title: '연결 보드', caption: '단서를 한눈에' },
+const STAGES: { id: Stage; title: string }[] = [
+  { id: 'diagnose', title: '진단' },
+  { id: 'plan', title: '72시간 계획' },
+  { id: 'package', title: '이의신청 패키지' },
+  { id: 'board', title: '연결 보드' },
 ];
 
 type Props = {
@@ -43,6 +45,9 @@ type Props = {
   followup: string;
   setFollowup: (v: string) => void;
   onFollowup: () => void;
+  images: ImageInput[];
+  onUpload: (files: File[]) => void;
+  onRemoveImage: (index: number) => void;
   busy: boolean;
   error: string;
   onAnswer: (question: string) => void;
@@ -58,22 +63,24 @@ function stampDate() {
 export function Workspace(p: Props) {
   const { result, stage, setStage, merchant, deadlineRef } = p;
   const { parsed } = result;
+  const upload = useRef<HTMLInputElement>(null);
   const planDone = p.plan.reduce((n, ph) => n + ph.steps.filter(s => p.checks[`${ph.id}:${s.id}`]).length, 0);
   const planTotal = p.plan.reduce((n, ph) => n + ph.steps.length, 0);
   const progress: Record<Stage, string> = {
-    diagnose: `${parsed.signals.length} 신호 · ${parsed.facts.length} 사실`,
-    plan: `${planDone}/${planTotal} 완료`,
-    package: `증빙 ${p.readiness.pct}%`,
+    diagnose: `${parsed.signals.length} 신호`,
+    plan: `${planDone}/${planTotal}`,
+    package: `${p.readiness.pct}%`,
     board: '',
   };
   const dday = deadlineRef ? (deadlineRef.daysLeft < 0 ? `D+${Math.abs(deadlineRef.daysLeft)}` : `D-${deadlineRef.daysLeft}`) : '기준일 확인';
+  const canSend = !p.busy && (p.followup.trim().length >= 5 || p.images.length > 0);
 
   return (
     <div className="page">
       <section className="ticket is-ready" key={`${parsed.title}-${p.revision}`} aria-label="사건 요약">
         <div className="ticket__main">
           <div className="nameplate">
-            <p className="nameplate__class">{CASE_LABEL[parsed.caseType]} · 사건 v{p.revision}</p>
+            <p className="nameplate__class">{CASE_LABEL[parsed.caseType]} · v{p.revision}</p>
             <h1 className="nameplate__line">{parsed.title}</h1>
             <p className="nameplate__sub">{parsed.summary}</p>
           </div>
@@ -92,9 +99,9 @@ export function Workspace(p: Props) {
 
       {p.previous && (
         <div className="change-banner">
-          <Icon name="link" size={14} />
-          <span>새 단서로 업데이트했어요 · {p.previous.parsed.paymentStatus !== parsed.paymentStatus ? `${PAYMENT_LABEL[p.previous.parsed.paymentStatus]} → ${PAYMENT_LABEL[parsed.paymentStatus]}` : `확인된 단서 ${p.previous.parsed.facts.length}개 → ${parsed.facts.length}개`}</span>
-          <button className="iconbtn" onClick={p.onDismissPrevious} aria-label="갱신 알림 닫기"><Icon name="close" size={13} /></button>
+          <Icon name="link" size={16} />
+          <span>새 단서로 업데이트했어요 · {p.previous.parsed.paymentStatus !== parsed.paymentStatus ? `${PAYMENT_LABEL[p.previous.parsed.paymentStatus]} → ${PAYMENT_LABEL[parsed.paymentStatus]}` : `단서 ${p.previous.parsed.facts.length}개 → ${parsed.facts.length}개`}</span>
+          <button className="iconbtn" onClick={p.onDismissPrevious} aria-label="갱신 알림 닫기"><Icon name="close" size={14} /></button>
         </div>
       )}
 
@@ -103,7 +110,7 @@ export function Workspace(p: Props) {
           <button key={s.id} className={stage === s.id ? 'active' : ''} onClick={() => setStage(s.id)} aria-current={stage === s.id ? 'step' : undefined}>
             <span className="n">0{i + 1}</span>
             <span className="t">{s.title}</span>
-            <span className="s">{progress[s.id] || s.caption}</span>
+            {progress[s.id] && <span className="s">{progress[s.id]}</span>}
           </button>
         ))}
       </nav>
@@ -117,12 +124,22 @@ export function Workspace(p: Props) {
 
       <div className="followup-area">
         {p.error && <p className="error" role="alert">{p.error}</p>}
-        <form className="followup" onSubmit={e => { e.preventDefault(); p.onFollowup(); }}>
-          <Icon name="plus" size={16} />
-          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="새로 받은 답장이나 알게 된 내용을 붙여넣으면 다시 분석해요" rows={1} />
-          <button className="inkbtn" disabled={p.busy || p.followup.trim().length < 5}>연결 <Icon name="arrow" size={14} /></button>
+        {p.images.length > 0 && (
+          <ul className="thumbs followup__thumbs">
+            {p.images.map((img, i) => (
+              <li key={i} className="thumb">
+                <img src={`data:${img.mime};base64,${img.data}`} alt={`첨부 사진 ${i + 1}`} />
+                <button type="button" className="thumb__x" onClick={() => p.onRemoveImage(i)} aria-label={`첨부 사진 ${i + 1} 삭제`}><Icon name="close" size={12} /></button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form className="followup" onSubmit={e => { e.preventDefault(); if (canSend) p.onFollowup(); }}>
+          <button type="button" className="iconbtn followup__attach" onClick={() => upload.current?.click()} disabled={p.busy || p.images.length >= MAX_IMAGES} aria-label="사진 첨부" title="사진 첨부"><Icon name="camera" size={20} /></button>
+          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="답장이나 사진을 추가해요" rows={1} />
+          <button className="inkbtn" disabled={!canSend}>다시 분석 <Icon name="arrow" size={16} /></button>
         </form>
-        <span>{result.mode === 'demo' ? '미리 만든 예시예요 · 새 내용을 연결하면 OpenAI로 분석해요' : '검토용 결과예요 · 보내고 접수하는 건 직접 해요'}</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden ref={upload} onChange={e => { const files = Array.from(e.target.files ?? []); if (files.length) p.onUpload(files); e.target.value = ''; }} />
       </div>
     </div>
   );

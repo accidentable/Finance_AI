@@ -9,7 +9,7 @@ npm ci
 npm run dev
 ```
 
-http://localhost:3000 에서 시작합니다. 첫 화면의 **예시 사건 3종**(해지 후 청구, 중복 승인, API 키 유출 의심)은 API 키 없이 동작하는 합성 사례이며 화면에 "합성 예시"로 표시됩니다.
+http://localhost:3000 에서 시작합니다. 첫 화면의 **예시 사건 3종**(해지 후 청구, 중복 승인, API 키 유출 의심)은 API 키 없이 동작하는 합성 사례이며 화면에 "예시" 도장으로 표시됩니다. 카드사는 예시마다 미리 지정돼 있습니다. `?case=apikey`(subscription / duplicate), `&tab=plan`(package / board)으로 특정 예시와 탭을 바로 열 수 있습니다.
 
 실제 분석은 `.env.example`을 `.env.local`로 복사한 뒤 서버 환경변수 `OPENAI_API_KEY`를 설정하세요. `OPENAI_MODEL` 기본값은 `gpt-5.6-sol`입니다. 키를 화면이나 Git에 입력하지 마세요.
 

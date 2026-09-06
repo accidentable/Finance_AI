@@ -101,9 +101,9 @@ export const SIGNAL_HINT: Record<SignalKind, string> = {
 export type Slots = { sms: string; mail: string; note: string };
 export const EMPTY_SLOTS: Slots = { sms: '', mail: '', note: '' };
 export const SLOT_META: { key: keyof Slots; label: string; hint: string; placeholder: string }[] = [
-  { key: 'sms', label: '카드 알림 문자 · 거래내역', hint: '가장 중요', placeholder: '[Web발신] 해외승인 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02 승인거절' },
-  { key: 'mail', label: '청구 메일 · 청구서', hint: '있으면', placeholder: '보낸 주소와 본문을 그대로 붙여넣으면 보낸 곳도 확인해요' },
-  { key: 'note', label: '내 상황 설명', hint: '한 줄이어도 괜찮아요', placeholder: '지난달까지 월 40달러였는데 이번 달 12,000달러가 청구됐어요. 키는 삭제했어요.' },
+  { key: 'sms', label: '카드 알림 문자 · 거래내역', hint: '필수', placeholder: '[Web발신] 해외승인 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02 승인거절' },
+  { key: 'mail', label: '청구 메일 · 청구서', hint: '선택', placeholder: '보낸 주소까지 그대로 붙여넣어 주세요' },
+  { key: 'note', label: '내 상황 설명', hint: '선택', placeholder: '지난달까지 월 40달러였는데 이번 달 12,000달러가 청구됐어요. 키는 삭제했어요.' },
 ];
 export function combineSlots(slots: Slots): string {
   return SLOT_META.map(m => { const v = slots[m.key].trim(); return v ? `[${m.label}]\n${v}` : ''; }).filter(Boolean).join('\n\n');

@@ -1,14 +1,16 @@
 import { combineSlots, deadlineFor, type CaseResult, type Parsed, type Report, type Slots } from './case';
 import { searchRules, verifySender } from './rules';
 import { buildReferences } from './references';
+import { ISSUERS } from './knowledge';
 
-export type Sample = { id: string; label: string; caption: string; slots: Slots; text: string; result: CaseResult };
+export type Sample = { id: string; label: string; caption: string; issuerId: string; slots: Slots; text: string; result: CaseResult };
 
-function sample(id: string, label: string, caption: string, slots: Slots, parsed: Parsed, report: Report): Sample {
+function sample(id: string, label: string, caption: string, issuerId: string, slots: Slots, parsed: Parsed, report: Report): Sample {
+  const issuer = ISSUERS.find(i => i.id === issuerId) ?? null;
   return {
-    id, label, caption, slots,
+    id, label, caption, issuerId, slots,
     text: combineSlots(slots),
-    result: { parsed, report, rules: searchRules(parsed.caseType), references: buildReferences(parsed), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: 'demo' },
+    result: { parsed, report, rules: searchRules(parsed.caseType), references: buildReferences(parsed, issuer), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: 'demo' },
   };
 }
 
@@ -34,8 +36,8 @@ const KEY_FACTS = [
 ];
 
 export const SAMPLES: Sample[] = [
-  sample('subscription', '해지했는데 또 결제됐어요', 'AI 글쓰기 구독 · USD 29 매입', {
-    sms: '[Web발신] 해외승인 ALPHAWRITE USD 29.00 09/01 10:12 일시불',
+  sample('subscription', '해지했는데 또 결제됐어요', 'AI 글쓰기 구독 · USD 29 매입', 'shinhan', {
+    sms: '[Web발신] 신한카드 해외승인 ALPHAWRITE USD 29.00 09/01 10:12 일시불',
     mail: '',
     note: SUB_FACTS.map(f => f.quote).join('\n'),
   }, {
@@ -66,8 +68,8 @@ export const SAMPLES: Sample[] = [
     },
   }),
 
-  sample('duplicate', '같은 금액이 두 번 찍혔어요', '디자인 도구 주문 · USD 49 승인 2건', {
-    sms: '[Web발신] 해외승인 BETADESIGN USD 49.00 09/03 21:40 일시불\n[Web발신] 해외승인 BETADESIGN USD 49.00 09/03 21:41 일시불',
+  sample('duplicate', '같은 금액이 두 번 찍혔어요', '디자인 도구 주문 · USD 49 승인 2건', 'kb', {
+    sms: '[Web발신] KB국민카드 해외승인 BETADESIGN USD 49.00 09/03 21:40 일시불\n[Web발신] KB국민카드 해외승인 BETADESIGN USD 49.00 09/03 21:41 일시불',
     mail: '',
     note: DUP_FACTS.map(f => f.quote).join('\n'),
   }, {
@@ -96,8 +98,8 @@ export const SAMPLES: Sample[] = [
     },
   }),
 
-  sample('apikey', 'API 키가 유출된 것 같아요', 'AI API 사용량 · USD 12,000 청구서', {
-    sms: '[Web발신] 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02\n[Web발신] 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/05 09:15',
+  sample('apikey', 'API 키가 유출된 것 같아요', 'AI API 사용량 · USD 12,000 청구서', 'samsung', {
+    sms: '[Web발신] 삼성카드 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02\n[Web발신] 삼성카드 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/05 09:15',
     mail: 'From: billing@gammaai.example\nSubject: Your GammaAI invoice for usage Aug 25 – Sep 3\n\nInvoice total: USD 12,000.00\nPayment method: card on file - payment failed, we will retry automatically.',
     note: KEY_FACTS.map(f => f.quote).join('\n'),
   }, {

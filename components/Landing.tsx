@@ -16,8 +16,8 @@ function ParsedPreview({ text }: { text: string }) {
   if (parts.length === 0 && !n.suspicious) return null;
   return (
     <div className={`slot__parsed ${n.suspicious ? 'warn' : ''}`}>
-      <span className="label">{n.suspicious ? '주의' : '문자에서 읽었어요'}</span>
-      {n.suspicious ? <span>국외·국제발신 문자예요. 링크는 누르지 말고 카드사 대표번호로 확인해 주세요.</span> : parts.map((p, i) => <span key={i} className="chip">{p}</span>)}
+      <span className="label">{n.suspicious ? '주의' : '읽은 값'}</span>
+      {n.suspicious ? <span>국외발신 문자예요. 링크는 누르지 말고 카드사 대표번호로 확인해 주세요.</span> : parts.map((p, i) => <span key={i} className="chip">{p}</span>)}
     </div>
   );
 }
@@ -51,16 +51,16 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
       <section className="ticket is-ready" aria-label="사건 접수">
         <div className="ticket__main">
           <div className="nameplate">
-            <p className="nameplate__class">접수 · 첫 72시간</p>
-            <h1 className="nameplate__line">어떤 결제 문제가<br />있었나요?</h1>
-            <p className="nameplate__sub">해외 AI·클라우드·구독 결제가 이상하다면, 있는 자료만 넣어도 괜찮아요</p>
+            <p className="nameplate__class">첫 72시간</p>
+            <h1 className="nameplate__line">어떤 결제가<br />이상했나요?</h1>
+            <p className="nameplate__sub">카드 문자나 사진 한 장이면 시작할 수 있어요.</p>
           </div>
-          <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수 창구</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
+          <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
 
           <form className="slots" onSubmit={e => { e.preventDefault(); onSubmit(); }}>
             {SLOT_META.map((m, i) => (
               <label key={m.key} className={`slot ${i === 0 ? 'slot--primary' : ''}`}>
-                <span className="slot__h"><Icon name={SLOT_ICON[m.key]} size={14} />{m.label}<span className="right">{m.hint}</span></span>
+                <span className="slot__h"><Icon name={SLOT_ICON[m.key]} size={16} />{m.label}<span className="right">{m.hint}</span></span>
                 <textarea
                   value={slots[m.key]}
                   onChange={e => setSlot(m.key, e.target.value)}
@@ -74,53 +74,52 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
             ))}
             <div className="attachments">
               <div className="attachments__head">
-                <span className="slot__h"><Icon name="file" size={14} />사진 · 텍스트 파일<span className="right">{images.length}/{MAX_IMAGES}장</span></span>
-                <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()} disabled={images.length >= MAX_IMAGES}><Icon name="plus" size={14} /> 사진·txt 추가</button>
+                <span className="slot__h"><Icon name="camera" size={16} />사진<span className="right">{images.length}/{MAX_IMAGES}</span></span>
+                <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()} disabled={images.length >= MAX_IMAGES}><Icon name="plus" size={16} /> 사진 추가</button>
               </div>
               {images.length > 0 && (
                 <ul className="thumbs">
                   {images.map((img, i) => (
                     <li key={i} className="thumb">
                       <img src={`data:${img.mime};base64,${img.data}`} alt={`첨부 사진 ${i + 1}`} />
-                      <button type="button" className="thumb__x" onClick={() => onRemoveImage(i)} aria-label={`첨부 사진 ${i + 1} 삭제`}><Icon name="close" size={11} /></button>
+                      <button type="button" className="thumb__x" onClick={() => onRemoveImage(i)} aria-label={`첨부 사진 ${i + 1} 삭제`}><Icon name="close" size={12} /></button>
                     </li>
                   ))}
                 </ul>
               )}
-              <p className="attachments__hint">카드 문자나 청구 화면을 캡처해 올리면 글자를 읽어서 같이 분석해요. 사진은 자동으로 가려지지 않으니 카드번호와 이름은 지우고 올려 주세요.</p>
+              <p className="attachments__hint">카드번호와 이름은 지우고 올려 주세요.</p>
             </div>
             <div className="entry__actions">
-              <span className="entry__note"><Icon name="shield" size={14} /> 보내기 전에 가려진 내용을 먼저 보여드려요</span>
-              <div className="entry__tools">
-                <button type="submit" className="inkbtn" disabled={busy || !canSubmit}>분석 시작 <span className="hint">Ctrl + Enter</span></button>
-              </div>
+              <span className="entry__note"><Icon name="shield" size={16} /> 보내기 전에 가린 내용을 보여드려요</span>
+              <button type="submit" className="inkbtn" disabled={busy || !canSubmit}>분석 시작 <Icon name="arrow" size={16} /></button>
             </div>
           </form>
           {error && <p className="error" role="alert">{error}</p>}
         </div>
 
-        <div className="perforation" aria-hidden="true"><span className="perforation__rule">예시 사건 · 바로 열어볼 수 있어요</span></div>
+        <div className="perforation" aria-hidden="true"><span className="perforation__rule">예시로 먼저 보기</span></div>
 
         <div className="stub is-ready">
-          <p className="stub__keep">미리 만들어 둔 예시 · AI 호출 없음</p>
           <div className="samples">
             {SAMPLES.map((s, i) => (
               <button type="button" key={s.id} className="sample" onClick={() => onSample(i)}>
-                <span className="sample__code">Case · 0{i + 1}</span>
+                <span className="sample__code">예시 0{i + 1}</span>
                 <b>{s.label}</b>
                 <small>{s.caption}</small>
                 <span className="textlink">열어보기 →</span>
               </button>
             ))}
           </div>
-          {saved && <button className="ghostbtn resume" onClick={onRestore}><Icon name="clock" size={14} /> 저장한 사건 이어보기</button>}
+          {saved && <button className="ghostbtn resume" onClick={onRestore}><Icon name="clock" size={16} /> 저장한 사건 이어보기</button>}
         </div>
       </section>
 
       <section className="conditions">
-        <h2 className="conditions__h">이렇게 써 보세요</h2>
-        <p>카드 알림 문자가 제일 중요해요. 거래일, 금액, 가맹점 표기가 거기서 나와요. 청구 메일은 보낸 주소까지 같이 넣으면 진짜 보낸 곳인지 대조해요. 전화번호, 이메일, API 키 모양은 보내기 전에 자동으로 가려요.</p>
-        <p>분쟁72는 상황을 정리하고 서류를 준비하는 데까지 도와요. 보내고 접수하는 건 직접 결정해요. 결과는 검토용이고, 환불 권리나 신청 기한을 확정하지 않아요.</p>
+        <ul className="conditions__list">
+          <li><Icon name="card" size={18} /><span>거래일, 금액, 가맹점은 카드 문자에서 읽어요.</span></li>
+          <li><Icon name="shield" size={18} /><span>전화번호, 이메일, API 키는 자동으로 가려요.</span></li>
+          <li><Icon name="file" size={18} /><span>결과는 검토용이에요. 보내고 접수하는 건 직접 해요.</span></li>
+        </ul>
       </section>
 
       <footer className="colophon">

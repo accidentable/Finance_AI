@@ -1,6 +1,6 @@
 export type IconName =
   | 'arrow' | 'plus' | 'close' | 'file' | 'mail' | 'link' | 'check' | 'search' | 'fit' | 'download' | 'clock' | 'board' | 'chevron' | 'shield'
-  | 'alert' | 'copy' | 'calendar' | 'list' | 'key' | 'card' | 'globe' | 'scale' | 'bolt' | 'building' | 'external' | 'sparkle' | 'radar';
+  | 'alert' | 'copy' | 'calendar' | 'list' | 'key' | 'card' | 'globe' | 'scale' | 'bolt' | 'building' | 'external' | 'sparkle' | 'radar' | 'camera';
 
 const PATHS: Record<IconName, React.ReactNode> = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
@@ -30,6 +30,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
   external: <path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />,
   sparkle: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.5 6.5l2 2M15.5 15.5l2 2M6.5 17.5l2-2M15.5 8.5l2-2" />,
   radar: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 12 18 6" /></>,
+  camera: <><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13" r="3.5" /></>,
 };
 
 export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {

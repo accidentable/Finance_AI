@@ -27,7 +27,7 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
     <div className="stage">
       <section className="sheet deadline">
         <div>
-          <div className="sheet__h"><Icon name="clock" size={14} /> 이번 여정</div>
+          <div className="sheet__h"><Icon name="clock" size={16} /> 일정</div>
           <ol className="legs">
             {plan.map((p, i) => (
               <li className={`leg ${i === 0 ? 'leg--hot' : ''}`} key={p.id}>
@@ -35,7 +35,7 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
                 <span className="leg__node" aria-hidden="true" />
                 <div className="leg__body">
                   <span className="leg__station">{p.title}</span>
-                  <span className="leg__note">{p.goal} · {doneIn(p)}/{p.steps.length} 완료</span>
+                  <span className="leg__note">{doneIn(p)}/{p.steps.length} 완료</span>
                 </div>
               </li>
             ))}
@@ -46,24 +46,23 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
                 <span className="leg__station">카드사 접수 참고 기한</span>
                 <div className="deadline__row">
                   <label className="date-field">
-                    <span>{noPosting ? '매입일 (아직 없어요)' : '거래일'}</span>
+                    <span>{noPosting ? '매입일' : '거래일'}</span>
                     <input type="date" value={txDate} onChange={e => setTxDate(e.target.value)} aria-label="거래일" />
                   </label>
                   <div className={`dday ${tone}`}>
                     <b>{dday}</b>
-                    <span>{deadlineRef ? `${deadlineRef.due}까지 · 거래일 + ${REFERENCE_DAYS}일` : noPosting ? '매입이 생기면 그 날짜를 넣어 주세요' : '거래일을 넣으면 계산해요'}</span>
+                    <span>{deadlineRef ? `${deadlineRef.due}까지` : noPosting ? '매입이 생기면 날짜를 넣어 주세요' : '거래일을 넣으면 계산해요'}</span>
                   </div>
                 </div>
               </div>
             </li>
           </ol>
-          <p className="fine">{noPosting ? `${result.deadline.note} ` : ''}이 날짜는 국제브랜드 규정의 통상 {REFERENCE_DAYS}일을 거래일에 더한 참고치예요. 사유마다 기준일이 다르고 카드사 접수 요건도 달라서, 실제 기한은 카드사에서 확인해야 해요.</p>
+          <p className="fine">거래일 + {REFERENCE_DAYS}일 참고치예요. 실제 기한은 카드사에서 확인해 주세요.</p>
         </div>
         <div className="deadline__side">
-          <div className="sheet__h"><Icon name="check" size={14} /> 진행</div>
+          <div className="sheet__h"><Icon name="check" size={16} /> 진행</div>
           <b>{done}<small>/{total}</small></b>
           <div className="meter"><div style={{ width: `${total ? (done / total) * 100 : 0}%` }} /></div>
-          <small>완료한 단계는 저장 버튼을 누르면 이 브라우저에 남아요.</small>
         </div>
       </section>
 
@@ -82,12 +81,12 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
                   <li key={id} className={checks[id] ? 'done' : ''}>
                     <label>
                       <input type="checkbox" checked={!!checks[id]} onChange={() => toggle(id)} />
-                      <span className="box" aria-hidden="true"><Icon name="check" size={11} /></span>
+                      <span className="box" aria-hidden="true"><Icon name="check" size={13} /></span>
                       <div>
                         <b>{step.title}{step.source === 'ai' && <span className="tag">AI 제안</span>}</b>
                         <p>{step.detail}</p>
-                        {step.link && <a href={step.link.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{step.link.label} <Icon name="external" size={10} /></a>}
-                        {step.source === 'ai' && step.refId && (() => { const ref = result.references.find(r => r.id === step.refId); return ref ? <a className="ref-chip" href={ref.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><span className={`ref-kind ${ref.kind}`}>근거</span>{ref.title}<Icon name="external" size={10} /></a> : null; })()}
+                        {step.link && <a href={step.link.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{step.link.label} <Icon name="external" size={12} /></a>}
+                        {step.source === 'ai' && step.refId && (() => { const ref = result.references.find(r => r.id === step.refId); return ref ? <a className="ref-chip" href={ref.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><span className={`ref-kind ${ref.kind}`}>근거</span>{ref.title}<Icon name="external" size={12} /></a> : null; })()}
                       </div>
                     </label>
                   </li>
@@ -100,7 +99,7 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
       </div>
 
       <section className="sheet">
-        <div className="sheet__h"><Icon name="building" size={14} /> 경로별 준비 상태</div>
+        <div className="sheet__h"><Icon name="building" size={16} /> 경로별 준비 상태</div>
         <div className="routes">
           {result.report.routes.map(r => (
             <div className="route" key={r.name}>
