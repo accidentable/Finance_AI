@@ -69,6 +69,14 @@ test('notification patterns compile and parse the documented examples', () => {
     assert.equal(n.suspicious, false);
   }
   assert.equal(parseNotification('[국제발신] [이베이] 결제안내 518USD$ 완료').suspicious, true);
+  const inline = parseNotification('[Web발신] KB국민카드 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02');
+  assert.equal(inline.descriptor, 'STRIPE *GAMMAAI');
+  assert.equal(inline.issuer, 'KB국민카드');
+  assert.equal(inline.type, 'declined');
+  const multi = parseNotification('[Web발신]\n신한카드 해외승인\n홍*동님\nUSD 29.00\n09/01 10:12\n일시불\nALPHAWRITE\n누적 123,456원');
+  assert.equal(multi.descriptor, 'ALPHAWRITE');
+  assert.equal(multi.amount, '29.00');
+  assert.equal(multi.type, 'approved');
   for (const s of SAMPLES) {
     const n = parseNotification(s.slots.sms);
     assert.equal(n.descriptor, s.result.parsed.descriptor, s.id);

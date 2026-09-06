@@ -3,7 +3,23 @@
 import { useRef } from 'react';
 import { SAMPLES } from '@/lib/samples';
 import { SLOT_META, type Slots } from '@/lib/case';
+import { parseNotification } from '@/lib/knowledge';
 import { Icon } from './Icon';
+
+const TYPE_LABEL = { approved: '해외승인', declined: '승인 거절', cancelled: '승인 취소' } as const;
+
+function ParsedPreview({ text }: { text: string }) {
+  if (!text.trim()) return null;
+  const n = parseNotification(text);
+  const parts = [n.issuer, n.type ? TYPE_LABEL[n.type] : null, n.currency && n.amount ? `${n.currency} ${n.amount}` : n.krw ? `${n.krw}원` : null, n.date ? `${n.date}${n.time ? ' ' + n.time : ''}` : null, n.descriptor].filter(Boolean);
+  if (parts.length === 0 && !n.suspicious) return null;
+  return (
+    <div className={`slot__parsed ${n.suspicious ? 'warn' : ''}`}>
+      <span className="label">{n.suspicious ? '주의' : '문자에서 읽음'}</span>
+      {n.suspicious ? <span>국외·국제발신 문자입니다. 링크를 누르지 말고 카드사 대표번호로 확인하세요.</span> : parts.map((p, i) => <span key={i} className="chip">{p}</span>)}
+    </div>
+  );
+}
 
 type Props = {
   slots: Slots;
@@ -50,6 +66,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, saved, o
                   rows={i === 0 ? 4 : 2}
                   onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
                 />
+                {m.key === 'sms' && <ParsedPreview text={slots.sms} />}
               </label>
             ))}
             <div className="entry__actions">

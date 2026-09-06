@@ -27,15 +27,29 @@ export const ReportSchema = z.object({
   actions: z.array(z.object({ title: z.string(), description: z.string(), urgency: z.enum(['now', 'today', 'next']), sourceId: z.string() })),
   routes: z.array(z.object({ name: z.enum(['merchant', 'issuer', 'kca']), title: z.string(), note: z.string(), missing: z.array(z.string()) })),
   drafts: z.object({ email: z.string(), statement: z.string(), timeline: z.string() }),
+  basis: z.array(z.object({ refId: z.string(), point: z.string() })),
 });
 
 export type Parsed = z.infer<typeof ParsedSchema>;
 export type Report = z.infer<typeof ReportSchema>;
 export type CaseType = Parsed['caseType'];
+
+// 판단 근거로 LLM에 주입하고 화면에 인용으로 표시하는 규정·정책 조각
+export type Reference = {
+  id: string;
+  kind: 'rule' | 'code' | 'issuer' | 'merchant' | 'authority';
+  title: string;
+  publisher: string;
+  url: string;
+  accessed: string;
+  text: string;
+};
+
 export type CaseResult = {
   parsed: Parsed;
   report: Report;
   rules: Rule[];
+  references: Reference[];
   verification: { domain: string | null; label: string; note: string };
   deadline: { status: 'unconfirmed'; note: string };
   mode: 'live' | 'demo';
@@ -92,6 +106,16 @@ export const SLOT_META: { key: keyof Slots; label: string; hint: string; placeho
 ];
 export function combineSlots(slots: Slots): string {
   return SLOT_META.map(m => { const v = slots[m.key].trim(); return v ? `[${m.label}]\n${v}` : ''; }).filter(Boolean).join('\n\n');
+}
+
+// 합쳐진 입력에서 카드 알림 문자 슬롯만 다시 꺼낸다. 규칙 파서는 이 부분만 본다.
+export function smsSection(input: string): string {
+  const header = `[${SLOT_META[0].label}]\n`;
+  const start = input.indexOf(header);
+  if (start === -1) return '';
+  const body = input.slice(start + header.length);
+  const end = body.search(/\n\n\[/);
+  return (end === -1 ? body : body.slice(0, end)).trim();
 }
 
 export function maskText(text: string) {

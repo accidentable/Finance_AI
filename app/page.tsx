@@ -6,6 +6,7 @@ import { CASE_LABEL, EMPTY_SLOTS, PAYMENT_LABEL, SIGNAL_LABEL, combineSlots, mas
 import { searchRules, verifySender } from '@/lib/rules';
 import { REASON_CODES, autoChecked, buildPlan, evidenceFor, issuerForm, lookupMerchant, readiness as computeReadiness, referenceDeadline } from '@/lib/playbook';
 import { ISSUERS, VERIFIED_LABEL, findIssuer, issuerReasonFor } from '@/lib/knowledge';
+import { buildReferences } from '@/lib/references';
 import { Icon } from '@/components/Icon';
 import { Landing } from '@/components/Landing';
 import { Workspace, type Stage } from '@/components/Workspace';
@@ -90,7 +91,7 @@ export default function Page() {
     abort.current = controller;
     let finished = false;
     try {
-      const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text }), signal: controller.signal });
+      const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text, issuerId: issuerId || undefined }), signal: controller.signal });
       if (!response.ok) { const body = await response.json(); throw new Error(body.error || '분석을 시작하지 못했습니다.'); }
       const reader = response.body?.getReader();
       if (!reader) throw new Error('분석 연결을 확인해 주세요.');
@@ -137,8 +138,10 @@ export default function Page() {
       const data = JSON.parse(localStorage.getItem(STORE) || '{}');
       if (!data.expires || data.expires < Date.now()) throw new Error();
       const parsed = ParsedSchema.parse(data.result.parsed);
-      const report = ReportSchema.parse(data.result.report);
-      const restored: CaseResult = { parsed, report, rules: searchRules(parsed.caseType), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: data.result.mode === 'demo' ? 'demo' : 'live' };
+      const report = ReportSchema.parse({ basis: [], ...data.result.report });
+      const savedIssuer = ISSUERS.find(i => i.id === data.issuerId) ?? null;
+      const references = Array.isArray(data.result.references) && data.result.references.length ? data.result.references : buildReferences(parsed, savedIssuer);
+      const restored: CaseResult = { parsed, report, rules: searchRules(parsed.caseType), references, verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: data.result.mode === 'demo' ? 'demo' : 'live' };
       setPrevious(null); setRevision(Number(data.revision) || 1); setStage('diagnose');
       applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined, issuerId: typeof data.issuerId === 'string' ? data.issuerId : '' });
       if (data.slots && typeof data.slots === 'object') setSlots({ ...EMPTY_SLOTS, ...data.slots });
@@ -158,6 +161,7 @@ export default function Page() {
       `- 금액: ${parsed.amount || '확인 필요'}`, `- 거래 상태: ${PAYMENT_LABEL[parsed.paymentStatus]}`, `- 유형: ${CASE_LABEL[parsed.caseType]}`,
       `- 참고 기한: ${deadlineRef ? `${deadlineRef.due} (D${deadlineRef.daysLeft < 0 ? '+' : '-'}${Math.abs(deadlineRef.daysLeft)}) · 카드사 확인 필요` : '기준일 확인 필요'}`,
       '', '## 판단 요약', report.headline, '', report.explanation,
+      ...(report.basis.length ? ['', '### 판단 근거', ...report.basis.map(b => { const ref = result.references.find(r => r.id === b.refId); return `- ${b.point}${ref ? ` — [${ref.title}](${ref.url})` : ''}`; })] : []),
       '', '## 탐지된 신호', ...(parsed.signals.length ? parsed.signals.map(s => `- ${SIGNAL_LABEL[s.kind]}: "${s.evidence}"`) : ['- 없음']),
       '', '## 확인한 사실', ...parsed.facts.map(f => `- ${f.label}: ${f.value}\n  > ${f.quote}`),
       '', '## 확인할 질문', ...report.questions.map(q => `- ${q.question} (${q.why})`),

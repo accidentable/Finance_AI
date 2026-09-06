@@ -114,7 +114,7 @@ export function readiness(items: EvidenceItem[], checks: Record<string, boolean>
 }
 
 // 72시간 플레이북. 사건 유형과 가맹점에 따라 결정되는 고정 단계 + AI가 제안한 행동을 긴급도별로 합친다.
-export type Step = { id: string; title: string; detail: string; link?: { label: string; url: string }; source: 'rule' | 'ai' };
+export type Step = { id: string; title: string; detail: string; link?: { label: string; url: string }; source: 'rule' | 'ai'; refId?: string };
 export type Phase = { id: 'stop' | 'merchant' | 'issuer'; title: string; window: string; goal: string; steps: Step[] };
 
 const KEEP_ORIGINALS: Step = { id: 'keep', title: '카드 알림·메일 원문 보관', detail: '삭제하지 말고 캡처와 원본 메일을 그대로 둡니다. 나중에 날짜와 표기를 대조합니다.', source: 'rule' };
@@ -208,7 +208,7 @@ function issuerSteps(parsed: Parsed, issuer: Issuer | null): Step[] {
 
 export function buildPlan(parsed: Parsed, merchant: Merchant | null, actions: Report['actions'] = [], issuer: Issuer | null = null): Phase[] {
   const ai = (urgency: Report['actions'][number]['urgency']) =>
-    actions.filter(a => a.urgency === urgency).map((a, i) => ({ id: `ai-${urgency}-${i}`, title: a.title, detail: a.description, source: 'ai' as const }));
+    actions.filter(a => a.urgency === urgency).map((a, i) => ({ id: `ai-${urgency}-${i}`, title: a.title, detail: a.description, source: 'ai' as const, refId: a.sourceId }));
   return [
     { id: 'stop', title: '지혈', window: '0~2시간', goal: '추가 청구를 막고 증거를 얼립니다', steps: [...stopSteps(parsed, merchant), ...ai('now')] },
     { id: 'merchant', title: '가맹점', window: '24시간 안에', goal: '가장 빨리 환불되는 경로입니다', steps: [...merchantSteps(parsed, merchant), ...ai('today')] },

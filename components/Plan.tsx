@@ -87,6 +87,7 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
                         <b>{step.title}{step.source === 'ai' && <span className="tag">AI 제안</span>}</b>
                         <p>{step.detail}</p>
                         {step.link && <a href={step.link.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{step.link.label} <Icon name="external" size={10} /></a>}
+                        {step.source === 'ai' && step.refId && (() => { const ref = result.references.find(r => r.id === step.refId); return ref ? <a className="ref-chip" href={ref.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><span className={`ref-kind ${ref.kind}`}>근거</span>{ref.title}<Icon name="external" size={10} /></a> : null; })()}
                       </div>
                     </label>
                   </li>

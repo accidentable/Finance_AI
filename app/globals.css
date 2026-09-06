@@ -332,6 +332,22 @@ code, .mono { font-family: var(--font-code); }
 .doc-tabs button[aria-selected='true'] { color: var(--ink); border-bottom-color: var(--stamp); }
 .draft { margin-top: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--stock-2); border: var(--hair) solid var(--rule); border-radius: var(--radius); font-family: var(--font-body); font-size: var(--text-sm); line-height: var(--lh-relaxed); color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; }
 
+/* 판단 근거·인용 */
+.basis { display: grid; gap: var(--space-sm); margin-top: var(--space-md); padding-top: var(--space-md); border-top: var(--hair) dashed var(--rule-strong); }
+.basis li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: var(--space-sm); }
+.basis__n { width: 20px; height: 20px; display: grid; place-items: center; border: var(--hair) solid var(--rule-strong); border-radius: 50%; font-family: var(--font-code); font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+.basis p { font-size: var(--text-sm); line-height: var(--lh-relaxed); color: var(--ink-2); }
+.ref-chip { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-2xs); padding: 3px 8px 3px 4px; border: var(--hair) solid var(--rule-strong); border-radius: 2px; background: var(--stock-2); font-family: var(--font-code); font-size: 0.62rem; letter-spacing: 0.04em; color: var(--ink-2); text-decoration: none; max-width: 100%; }
+.ref-chip:hover { border-color: var(--ink); color: var(--ink); }
+.ref-chip svg { color: var(--faint); }
+.ref-kind { padding: 1px 5px; border-radius: 2px; background: var(--ink); color: var(--stock); letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.56rem; }
+.ref-kind.code { background: var(--stamp); }
+.ref-kind.merchant, .ref-kind.issuer { background: var(--rail); }
+.slot__parsed { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin: var(--space-2xs) 0 var(--space-xs); font-size: var(--text-xs); color: var(--ink-2); }
+.slot__parsed .label { color: var(--rail); }
+.slot__parsed.warn .label { color: var(--stamp); }
+.slot__parsed .chip { padding: 2px 7px; border: var(--hair) solid var(--rule-strong); border-radius: 2px; background: var(--stock); font-family: var(--font-code); font-size: 0.66rem; letter-spacing: 0.04em; color: var(--ink); }
+
 /* 카드사 선택·안내 */
 .issuer-select { width: 100%; max-width: 12rem; border: var(--hair) solid var(--rule-strong); border-radius: var(--radius); padding: 6px 8px; background: var(--stock); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--ink); cursor: pointer; }
 .issuer-select:hover { border-color: var(--ink-2); }

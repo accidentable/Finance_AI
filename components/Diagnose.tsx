@@ -17,6 +17,23 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
         <div className="sheet__h"><Icon name="sparkle" size={14} /> {result.mode === 'demo' ? '합성 예시의 판단 요약' : 'AI 판단 요약'}</div>
         <h2>{report.headline}</h2>
         <p>{report.explanation}</p>
+        {report.basis.length > 0 && (
+          <ol className="basis">
+            {report.basis.map((b, i) => {
+              const ref = result.references.find(r => r.id === b.refId);
+              return (
+                <li key={i}>
+                  <span className="basis__n">{i + 1}</span>
+                  <div>
+                    <p>{b.point}</p>
+                    {ref && <a className="ref-chip" href={ref.url} target="_blank" rel="noopener noreferrer"><span className={`ref-kind ${ref.kind}`}>{ref.kind === 'code' ? '사유코드' : ref.kind === 'issuer' ? '카드사' : ref.kind === 'merchant' ? '사업자 정책' : ref.kind === 'authority' ? '당국 안내' : '참고 자료'}</span>{ref.title}<Icon name="external" size={10} /></a>}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+        <p className="fine">근거는 수집한 규정·정책 조각에서만 고릅니다. 조각에 없는 코드나 기한은 쓰지 않도록 제한했습니다. 조회일 {result.references[0]?.accessed ?? ''}.</p>
       </section>
 
       <div className="grid-2">

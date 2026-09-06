@@ -100,7 +100,15 @@ export function parseNotification(text: string): NotificationParse {
   const lines = text.split(/\n|\s{2,}/).map(l => l.trim()).filter(Boolean);
   let descriptor: string | null = null;
   for (const line of lines) {
-    const cleaned = line.replace(re(p.foreignAmount, 'g'), '').replace(re(p.dateTime, 'g'), '').replace(re(p.type, 'g'), '').replace(re(p.installment, 'g'), '').replace(/\[(Web|웹|국외|국제)발신\]/g, '').trim();
+    // 금액·일시·발신 표기를 지우고, 한글 토큰(카드사명, 승인 유형, 님, 일시불, 원)과 숫자 토큰을 걷어내면 가맹점 표기만 남는다.
+    const cleaned = line
+      .replace(re(p.foreignAmount, 'g'), ' ')
+      .replace(re(p.dateTime, 'g'), ' ')
+      .replace(/\[(Web|웹|국외|국제)발신\]/g, ' ')
+      .replace(/\S*[ㄱ-힝]\S*/g, ' ')
+      .replace(/(^|\s)[\d,.:/]+(?=\s|$)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     if (cleaned && re(p.descriptorLine).test(cleaned)) { descriptor = cleaned; break; }
   }
   return {

@@ -1,5 +1,6 @@
 import { combineSlots, deadlineFor, type CaseResult, type Parsed, type Report, type Slots } from './case';
 import { searchRules, verifySender } from './rules';
+import { buildReferences } from './references';
 
 export type Sample = { id: string; label: string; caption: string; slots: Slots; text: string; result: CaseResult };
 
@@ -7,7 +8,7 @@ function sample(id: string, label: string, caption: string, slots: Slots, parsed
   return {
     id, label, caption, slots,
     text: combineSlots(slots),
-    result: { parsed, report, rules: searchRules(parsed.caseType), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: 'demo' },
+    result: { parsed, report, rules: searchRules(parsed.caseType), references: buildReferences(parsed), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: 'demo' },
   };
 }
 
@@ -53,6 +54,11 @@ export const SAMPLES: Sample[] = [
       { title: '카드사 접수 요건 확인', description: '매입 내역과 해지 기록을 준비해 상담하세요.', urgency: 'next', sourceId: 'visa-disputes' },
     ],
     routes,
+    basis: [
+      { refId: 'code:visa:13.2', point: '해지 요청 뒤 이어진 정기 청구는 Visa 13.2 취소된 정기결제 유형에 해당하며, 기한은 거래 처리일로부터 120일입니다.' },
+      { refId: 'subscription', point: '해지 요청일과 해지 효력일이 다를 수 있어 종료일 확인이 청구 정당성 판단의 출발점입니다.' },
+      { refId: 'authority:kca-chargeback-guide', point: '가맹점과 먼저 해결을 시도한 이메일 기록이 차지백 입증서류로 요구됩니다.' },
+    ],
     drafts: {
       email: 'Subject: Request to review a charge after cancellation — AlphaWrite\n\nHello Billing Team,\n\nI requested cancellation on August 20, 2026. My card statement shows a USD 29.00 charge on September 1, 2026. I contacted support on September 2 and am awaiting a response.\n\nPlease confirm the effective cancellation date and the service period covered by this charge. If the charge was made in error, please advise on correcting it.\n\nI can provide my cancellation request and transaction record.\n\nThank you,\n[Your name]\n[Account email]\n\nDraft for review before sending.',
       statement: '카드사 상담용 사실관계 정리 · 검토 초안\n\n사업자: AlphaWrite\n거래: 2026-09-01, USD 29.00, 매입 내역 확인\n\n2026-08-20: 구독 해지 요청\n2026-09-01: 카드 매입 내역 확인\n2026-09-02: 사업자 고객센터 문의, 답변 대기\n\n확인 필요: 해지 효력일, 청구 대상 기간\n보유 자료: 해지 요청 화면, 카드 매입 내역\n\n위 사실에 따른 상담 및 접수 요건 안내를 요청합니다. 접수 전 카드사 양식을 확인하겠습니다.\n신청인: [직접 입력]',
@@ -79,6 +85,10 @@ export const SAMPLES: Sample[] = [
       { title: '주문 확인서 보관', description: '주문 수량과 금액이 보이는 화면을 보존하세요.', urgency: 'today', sourceId: 'kca-evidence' },
     ],
     routes,
+    basis: [
+      { refId: 'code:visa:12.6.1', point: '승인 알림 두 건과 매입 두 건은 다르며, Visa 12.6.1 중복 처리는 매입 내역 두 건이 있어야 성립합니다.' },
+      { refId: 'authority:fss-2026-06-card-complaints', point: '카드사 이의제기는 증빙을 확보한 뒤 90~120일 안에 신청해야 하므로 매입 확정을 확인한 즉시 준비합니다.' },
+    ],
     drafts: {
       email: 'Subject: Please verify possible duplicate billing\n\nHello BetaDesign,\nI placed one USD 49.00 order on September 3, 2026, but received two card authorization notifications. I have not yet confirmed whether both transactions were posted.\nPlease check the transactions associated with my order and confirm whether one of them will be released or refunded.\n\n[Your name]\nDraft for review.',
       statement: '상담용 검토 초안\nBetaDesign 주문 1건에 USD 49.00 승인 알림 2건을 받았습니다. 실제 매입 수는 미확인입니다. 거래 상태 확인을 요청합니다.\n신청인: [직접 입력]',
@@ -113,6 +123,12 @@ export const SAMPLES: Sample[] = [
       { title: '카드사에 반복 승인 시도 차단 상담', description: '매입 전이라도 해당 가맹점 결제 차단을 요청할 수 있습니다.', urgency: 'today', sourceId: 'visa-disputes' },
     ],
     routes: routes.map(r => r.name === 'issuer' ? { ...r, title: '추가 결제 방지 상담', note: '승인 거절이어도 반복 시도 대응은 카드사에 상담할 수 있습니다. 매입이 생기면 그때 접수 요건을 확인합니다.' } : r),
+    basis: [
+      { refId: 'code:visa:10.4', point: 'API 키 도용은 카드 정보 도용이 아니므로 Visa 10.4 같은 카드 도용 사유코드에 해당하지 않는 경우가 많습니다.' },
+      { refId: 'merchant:stripe', point: '카드 표기 STRIPE *GAMMAAI는 결제대행 표기이며, 환불은 Stripe가 아니라 실제 판매자 GammaAI에 요청해야 합니다.' },
+      { refId: 'cloud-budget', point: '알림 전용 예산은 사용량을 차단하지 않으므로 키 삭제와 한도 설정이 별도로 필요합니다.' },
+      { refId: 'authority:fss-2026-06-card-complaints', point: '매입이 없어 카드사 이의제기 대상은 아직 없지만, 발생 시 90~120일 기한이 시작됩니다.' },
+    ],
     drafts: {
       email: 'Subject: Request to review unauthorized API usage — invoice of USD 12,000\n\nHello GammaAI Billing,\n\nOn September 4, 2026 I received an invoice for USD 12,000 in API usage. My usage has been about USD 40 per month, and I did not generate this usage. The usage dashboard shows a spike in requests from foreign IP addresses starting September 2.\n\nOn September 5, 2026 I deleted the affected API key and issued a new one. Card authorizations for this invoice on September 4 and 5 were declined.\n\nPlease review this usage as unauthorized, provide the request logs for the period, and pause further payment attempts while the review is open.\n\nI can provide the key deletion record and my previous usage history.\n\nThank you,\n[Your name]\n[Account email]\n\nDraft for review before sending.',
       statement: '카드사 상담용 사실관계 정리 · 검토 초안\n\n사업자: GammaAI (카드 표기 STRIPE *GAMMAAI)\n청구: 2026-09-04, USD 12,000.00 청구서. 카드 승인은 9월 4일·5일 거절. 매입 없음.\n\n2026-09-02: 사용량 대시보드에 해외 IP 요청 급증 시작\n2026-09-04: 청구서 수신 · 승인 거절\n2026-09-05: 승인 거절 반복 · API 키 삭제 및 재발급\n\n평소 사용량: 월 USD 40 수준\n요청: 해당 가맹점 반복 승인 시도 차단 상담. 매입 발생 시 접수 요건 안내.\n신청인: [직접 입력]',
