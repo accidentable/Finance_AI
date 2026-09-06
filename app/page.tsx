@@ -50,11 +50,15 @@ export default function Page() {
     if (idx >= 0) openSample(idx);
     const tab = new URLSearchParams(window.location.search).get('tab');
     if (idx >= 0 && tab && /^[a-z-]+$/.test(tab)) scrollTo.current = tab;
-    return () => abort.current?.abort();
+    // 브라우저 뒤로가기로도 첫 화면으로 돌아간다.
+    const onPop = () => { if (!window.history.state?.view) reset(false); };
+    window.addEventListener('popstate', onPop);
+    return () => { abort.current?.abort(); window.removeEventListener('popstate', onPop); };
   }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 3500); return () => clearTimeout(t); }, [toast]);
   useEffect(() => {
     if (!result) return;
+    if (window.history.state?.view !== 'case') window.history.pushState({ view: 'case' }, '', window.location.href);
     const id = scrollTo.current;
     scrollTo.current = null;
     if (id) { setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 50); return; }
@@ -84,8 +88,10 @@ export default function Page() {
     setFollowup('');
     setError('');
   }
-  function reset() {
+  function reset(viaHistory = true) {
     abort.current?.abort();
+    if (viaHistory && window.history.state?.view === 'case') window.history.back();
+    else window.history.replaceState(null, '', window.location.pathname);
     setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setImages([]); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId('');
   }
   function openSample(index: number) {
@@ -245,12 +251,13 @@ export default function Page() {
     <>
       <header className="masthead">
         <div className="masthead__in">
-          <button className="brand" onClick={reset} aria-label="구독컷 홈"><span className="brand__mark">구독<span>컷</span></span><span className="brand__service">해외 구독 이상청구 대응</span></button>
+          <button className="brand" onClick={() => reset()} aria-label="구독컷 홈"><span className="brand__mark">구독<span>컷</span></span><span className="brand__service">해외 구독 이상청구 대응</span></button>
           <div className="masthead__status">
             {result ? (
               <>
                 <span className="masthead__confirmed"><i className={`masthead__dot ${result.mode}`} />{result.mode === 'demo' ? '예시' : '분석 완료'}<span className="long"> · {result.parsed.merchant || '사건'} · v{revision}</span></span>
                 <div className="masthead__actions">
+                  <button className="ghostbtn small" onClick={() => reset()}>← 처음으로</button>
                   <button className="ghostbtn small" onClick={save}><Icon name="download" size={13} /> 저장</button>
                   {saved && <button className="ghostbtn small" onClick={() => { localStorage.removeItem(STORE); setSaved(false); setToast('이 브라우저에 저장한 사건을 지웠어요.'); }}>저장본 삭제</button>}
                   <button className="ghostbtn small" onClick={exportMarkdown}>내보내기 →</button>
