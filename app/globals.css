@@ -365,6 +365,53 @@ code, .mono { font-family: var(--font-code); }
 .slot__parsed.warn .label { color: var(--stamp); }
 .slot__parsed .chip { padding: 2px 7px; border: var(--hair) solid var(--rule-strong); border-radius: 2px; background: var(--stock); font-family: var(--font-code); font-size: var(--text-xs); letter-spacing: 0.04em; color: var(--ink); }
 
+
+/* 지금 할 일 · 단계 프로세스 */
+.todo__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-xl); margin-bottom: var(--space-xl); }
+.todo__title { font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl); line-height: var(--lh-snug); letter-spacing: var(--track-tight); margin-top: var(--space-2xs); }
+.todo__sub { margin-top: var(--space-xs); font-size: var(--text-base); color: var(--ink-2); max-width: 60ch; }
+.todo__progress { flex: 0 0 10rem; }
+.todo__progress b { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--text-2xl); line-height: 1; margin-bottom: var(--space-xs); text-align: right; }
+.todo__progress b small { font-size: var(--text-base); color: var(--faint); font-weight: 400; }
+.process { display: grid; }
+.process__phase { position: relative; display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); column-gap: var(--space-md); padding: var(--space-lg) 0; border-top: var(--hair) solid var(--rule); }
+.process__phase:first-child { border-top: 0; padding-top: 0; }
+.process__marker { position: relative; }
+.process__marker::after { content: ''; position: absolute; top: 2.75rem; bottom: calc(-1 * var(--space-lg)); left: 50%; width: 2px; transform: translateX(-50%); background: var(--rule); }
+.process__phase:last-child .process__marker::after { display: none; }
+.process__n { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 2px solid var(--rule-strong); background: var(--stock); font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--muted); }
+.is-current .process__n { border-color: var(--stamp); background: var(--stamp); color: var(--stamp-ink); box-shadow: 0 0 0 5px var(--stamp-soft); }
+.is-done .process__n { border-color: var(--ink); background: var(--ink); color: var(--stock); }
+.is-later { opacity: 0.72; }
+.process__when { font-family: var(--font-code); font-size: var(--text-xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+.is-current .process__when { color: var(--stamp); }
+.process__now { padding: 2px 8px; border-radius: 2px; background: var(--stamp); color: var(--stamp-ink); font-size: 0.8125rem; letter-spacing: 0.06em; }
+.process__body h3 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl); letter-spacing: var(--track-tight); line-height: var(--lh-snug); margin-top: var(--space-2xs); }
+.process__goal { font-size: var(--text-base); color: var(--ink-2); margin: var(--space-2xs) 0 var(--space-md); }
+.process__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-md); }
+.process__actions .inkbtn, .process__actions .ghostbtn { text-decoration: none; }
+.deadline-line { display: flex; align-items: flex-end; gap: var(--space-xl); flex-wrap: wrap; margin-top: var(--space-md); padding: var(--space-md); background: var(--stock-2); border: var(--hair) dashed var(--rule-strong); border-radius: var(--radius); }
+.details__cell--wide dd small { display: block; margin-top: var(--space-xs); font-size: var(--text-sm); font-weight: 400; line-height: var(--lh-normal); color: var(--muted); }
+
+/* 접이식 근거 */
+.fold { padding: 0; }
+.fold > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); padding: var(--space-lg) clamp(var(--space-lg), 3vw, var(--space-2xl)); }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary:hover { background: var(--stock-2); }
+.fold__title { display: inline-flex; align-items: center; gap: var(--space-sm); font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: var(--track-tight); }
+.fold__title svg { color: var(--rail); }
+.fold__meta { font-family: var(--font-code); font-size: var(--text-xs); letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
+.fold__meta::after { content: ' +'; }
+.fold[open] .fold__meta::after { content: ' −'; }
+.fold__body { padding: 0 clamp(var(--space-lg), 3vw, var(--space-2xl)) clamp(var(--space-lg), 3vw, var(--space-2xl)); display: grid; gap: var(--space-xl); }
+.fold__block > .label { display: block; margin-bottom: var(--space-sm); }
+.fold__block .sheet__head { margin-bottom: var(--space-sm); }
+.fold__block .sheet__head .label { margin-bottom: 0; }
+
+/* 서류 영역 */
+.documents { display: grid; gap: var(--space-lg); }
+.documents__head { padding: 0 var(--space-xs); }
+
 /* 접이식 */
 .more { margin-top: var(--space-sm); }
 .more summary { cursor: pointer; font-size: var(--text-sm); color: var(--muted); list-style: none; display: inline-flex; align-items: center; gap: var(--space-xs); }
@@ -533,6 +580,14 @@ code, .mono { font-family: var(--font-code); }
   .stamp__date { font-size: var(--text-sm); }
   .nameplate { padding-right: 0; }
   .details { margin-top: var(--space-md); }
+  .todo__head { flex-direction: column; gap: var(--space-md); }
+  .todo__progress { flex-basis: auto; width: 100%; }
+  .todo__progress b { text-align: left; }
+  .process__phase { grid-template-columns: 2.25rem minmax(0, 1fr); column-gap: var(--space-sm); }
+  .process__n { width: 2.25rem; height: 2.25rem; font-size: var(--text-base); }
+  .process__marker::after { top: 2.25rem; }
+  .fold > summary { flex-direction: column; align-items: flex-start; gap: var(--space-2xs); }
+  .process__actions .inkbtn, .process__actions .ghostbtn { flex: 1 1 100%; justify-content: center; }
   .followup { flex-wrap: wrap; }
   .followup textarea { flex: 1 1 100%; order: -1; padding: var(--space-xs) var(--space-sm); }
   .followup .inkbtn { flex: 1; justify-content: center; }

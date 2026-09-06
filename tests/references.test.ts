@@ -21,14 +21,14 @@ test('every sample basis and action points at an existing reference', () => {
 });
 
 test('references adapt to case type, merchant and issuer', () => {
-  const theft = SAMPLES.find(s => s.id === 'apikey')!;
+  const theft = SAMPLES.find(s => s.id === 'aws')!;
   const refs = buildReferences(theft.result.parsed, ISSUERS.find(i => i.id === 'kb')!);
   const fraud = findReference(refs, 'code:visa:10.4')!;
   assert.match(fraud.text, /해당 없음/);
-  assert.ok(findReference(refs, 'merchant:stripe'));
+  assert.ok(findReference(refs, 'merchant:aws'));
   assert.ok(findReference(refs, 'issuer:kb')?.text.includes('110일'));
   const sub = buildReferences(SAMPLES[0].result.parsed);
-  assert.ok(findReference(sub, 'code:visa:13.2'));
+  assert.ok(findReference(sub, 'code:visa:12.5'));
   assert.ok(!findReference(sub, 'code:visa:10.4'));
   assert.ok(!sub.some(r => r.kind === 'issuer'));
 });

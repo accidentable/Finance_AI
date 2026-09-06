@@ -90,23 +90,23 @@ test('issuer reason mapping and plan wiring use the selected issuer', () => {
   assert.equal(issuerReasonFor(bc, 'duplicate'), '이중청구 및 금액오류');
   assert.equal(issuerReasonFor(kb, 'not_received'), '결제 후 물품·서비스 미제공');
   assert.equal(issuerReasonFor(null, 'duplicate'), null);
-  const sub = SAMPLES.find(s => s.id === 'subscription')!;
-  const plan = buildPlan(sub.result.parsed, null, [], kb);
+  const subParsed = { ...SAMPLES[0].result.parsed, caseType: 'cancelled_recurring' as const, paymentStatus: 'posted' as const };
+  const plan = buildPlan(subParsed, null, [], kb);
   const step = plan[2].steps.find(s => s.id === 'issuer_form')!;
   assert.match(step.title, /KB국민카드/);
   assert.match(step.detail, /110일/);
   assert.ok(step.link?.url.startsWith('https://'));
-  const form = issuerForm(sub.result.parsed, null, REASON_CODES.cancelled_recurring, '', kb);
+  const form = issuerForm(subParsed, null, REASON_CODES.cancelled_recurring, '', kb);
   assert.equal(form.find(f => f.label === '카드사 사유 이름')?.value, '취소 미처리');
   assert.ok(form.find(f => f.label === '접수 채널'));
-  assert.ok(!issuerForm(sub.result.parsed, null, null, '').some(f => f.label === '접수 채널'));
+  assert.ok(!issuerForm(subParsed, null, null, '').some(f => f.label === '접수 채널'));
 });
 
 test('reconcile fills descriptor and amount only when extraction left them empty', () => {
   const base = { ...SAMPLES[0].result.parsed, descriptor: null, amount: null, paymentStatus: 'unknown' as const };
   const fixed = reconcileWithNotification(base, SAMPLES[0].slots.sms);
-  assert.equal(fixed.descriptor, 'ALPHAWRITE');
-  assert.equal(fixed.amount, 'USD 29.00');
+  assert.equal(fixed.descriptor, 'ANTHROPIC');
+  assert.equal(fixed.amount, 'USD 200.00');
   assert.equal(fixed.paymentStatus, 'approved');
   const kept = reconcileWithNotification(SAMPLES[0].result.parsed, SAMPLES[0].slots.sms);
   assert.equal(kept.paymentStatus, 'posted');

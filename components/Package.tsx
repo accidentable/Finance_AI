@@ -8,7 +8,7 @@ import { Icon } from './Icon';
 import { IssuerSelect } from './IssuerSelect';
 
 type Draft = 'email' | 'statement' | 'timeline';
-const DRAFT_LABEL: Record<Draft, string> = { email: '영문 문의 메일', statement: '국문 사실 정리', timeline: '타임라인' };
+const DRAFT_LABEL: Record<Draft, string> = { email: '가맹점에 보낼 영문 메일', statement: '카드사 상담용 정리', timeline: '날짜순 정리' };
 const CHANNEL_LABEL: Record<string, string> = { web: '홈페이지', app: '앱', phone: '전화', branch: '영업점', fax: '팩스', mail: '우편', email: '이메일' };
 
 type Props = {
@@ -41,7 +41,7 @@ function IssuerGuide({ issuer, issuerId, setIssuerId, result }: { issuer: Issuer
     return (
       <section className="sheet sheet--tint issuer-empty">
         <div className="sheet__h"><Icon name="building" size={16} /> 카드사 접수 안내</div>
-        <p>카드사를 고르면 접수 채널과 기한을 보여드려요.</p>
+        <p>어느 카드로 결제했는지 고르면 그 카드사의 접수 방법과 기한을 보여드려요.</p>
         <div className="issuer-pick"><IssuerSelect value={issuerId} onChange={setIssuerId} /></div>
       </section>
     );
@@ -111,7 +111,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
 
       <div className="grid-2">
         <section className="sheet">
-          <div className="sheet__h"><Icon name="scale" size={16} /> 사유코드 후보</div>
+          <div className="sheet__h"><Icon name="scale" size={16} /> 카드사에 말할 분쟁 사유</div>
           <p className="type-line">유형 <b>{CASE_LABEL[parsed.caseType]}</b></p>
           {mapping ? (
             <>
@@ -125,11 +125,11 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
           ) : (
             <p className="empty">유형이 정해지면 후보가 나와요.</p>
           )}
-          <p className="fine">상담용 후보예요. 최종 결정은 카드사가 해요.</p>
+          <p className="fine">카드사 상담 때 "이 사유로 접수하고 싶다"고 말하면 돼요. 최종 분류는 카드사가 해요.</p>
         </section>
 
         <section className="sheet">
-          <div className="sheet__h"><Icon name="check" size={16} /> 증빙 준비</div>
+          <div className="sheet__h"><Icon name="check" size={16} /> 모아야 할 증빙</div>
           <div className="readiness"><b>{readiness.pct}%</b><span>{readiness.done} / {readiness.total}</span></div>
           <div className="meter big"><div style={{ width: `${readiness.pct}%` }} /></div>
           {evidence.length === 0 ? <p className="empty">유형이 정해지면 체크리스트가 생겨요.</p> : (
@@ -153,7 +153,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
 
       <section className="sheet">
         <div className="sheet__head">
-          <div className="sheet__h"><Icon name="card" size={16} /> 신청서 항목</div>
+          <div className="sheet__h"><Icon name="card" size={16} /> 신청서에 옮겨 적을 내용</div>
           <button className="ghostbtn small" onClick={() => onCopy(formText, '신청서 항목')}><Icon name="copy" size={15} /> 복사</button>
         </div>
         <table className="form-table">
@@ -167,7 +167,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
       <section className="ticket" aria-label="제출 초안">
         <div className="ticket__main">
           <div className="sheet__head">
-            <div className="sheet__h"><Icon name="file" size={16} /> 초안</div>
+            <div className="sheet__h"><Icon name="file" size={16} /> 보낼 글 초안</div>
             <button className="ghostbtn small" onClick={() => onCopy(report.drafts[draft], DRAFT_LABEL[draft])}><Icon name="copy" size={15} /> 복사</button>
           </div>
           <div className="doc-tabs" role="tablist">

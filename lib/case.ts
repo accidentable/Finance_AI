@@ -152,3 +152,42 @@ export function deadlineFor(status: Parsed['paymentStatus']): CaseResult['deadli
       : '사유마다 기준일이 달라요. 정확한 신청 기한은 카드사에서 확인해야 해요.',
   };
 }
+
+// 화면 제목은 AI가 짓지 않는다. 사건 유형과 결제 상태로 정해진 문장을 쓴다.
+export function caseTitle(parsed: Pick<Parsed, 'caseType' | 'paymentStatus' | 'amount' | 'merchant'>): string {
+  const amt = parsed.amount?.trim() || '결제';
+  const who = parsed.merchant?.trim() || '이 가맹점';
+  const s = parsed.paymentStatus;
+  const noMoney = s === 'declined' || s === 'invoice_only';
+  switch (parsed.caseType) {
+    case 'cancelled_recurring':
+      return s === 'posted' ? `해지했는데 ${amt}가 다시 결제됐어요` : s === 'approved' ? `해지했는데 ${amt} 승인이 잡혔어요` : `해지했는데 ${amt} 청구가 다시 왔어요`;
+    case 'duplicate':
+      return s === 'posted' ? `${amt}가 두 번 결제됐어요` : s === 'approved' ? `${amt} 승인이 두 번 잡혔어요` : `${amt}가 두 번 청구됐어요`;
+    case 'credential_theft':
+      return noMoney ? '누군가 내 키를 쓴 것 같아요. 아직 돈은 안 나갔어요' : s === 'approved' ? `누군가 내 키를 써서 ${amt} 승인이 잡혔어요` : `누군가 내 키를 써서 ${amt}가 결제됐어요`;
+    case 'billing_error':
+      return `${amt}가 잘못 청구된 것 같아요`;
+    case 'not_received':
+      return `${who}에 결제했는데 서비스를 못 받았어요`;
+    default:
+      return `${who} 결제를 확인해야 해요`;
+  }
+}
+
+// 결제 상태 옆에 붙는 한 줄 설명. "매입" 같은 말은 여기서 풀어 준다.
+export const STATUS_HINT: Record<Parsed['paymentStatus'], string> = {
+  posted: '카드사가 청구를 확정했어요. 이의신청은 이 상태에서 할 수 있어요.',
+  approved: '승인만 잡힌 상태예요. 며칠 안에 확정되는지 카드 앱에서 확인해요.',
+  declined: '승인이 거절돼서 아직 돈은 안 나갔어요. 이의신청 대상은 아직 아니에요.',
+  invoice_only: '청구서만 왔고 카드 결제는 아직이에요.',
+  unknown: '카드 앱에서 승인·확정 여부를 확인해 주세요.',
+};
+
+// AI 제목에 비유·수사가 섞이면 규칙 제목으로 바꾼다.
+const FANCY = /퍼즐|지혈|여정|열차|티켓|차례예요|퍼즐|마지막 조각|열쇠|고비|골든타임|승부/;
+export function plainHeadline(headline: string, parsed: Pick<Parsed, 'caseType' | 'paymentStatus' | 'amount' | 'merchant'>): string {
+  const h = headline.trim();
+  if (!h || h.length > 40 || FANCY.test(h) || /[!？?]$/.test(h)) return caseTitle(parsed);
+  return h;
+}

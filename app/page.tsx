@@ -11,7 +11,7 @@ import { MAX_IMAGES, downscaleImage, isImageFile, type ImageInput } from '@/lib/
 import { TRANSCRIPT_HEADER } from '@/lib/agent';
 import { Icon } from '@/components/Icon';
 import { Landing } from '@/components/Landing';
-import { Workspace, type Stage } from '@/components/Workspace';
+import { Workspace } from '@/components/Workspace';
 import { LoadingOverlay, ReviewDialog, Toast } from '@/components/Overlays';
 
 const STORE = 'dispute72-case-v4';
@@ -28,7 +28,7 @@ export default function Page() {
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
   const [review, setReview] = useState<string | null>(null);
-  const [stage, setStage] = useState<Stage>('diagnose');
+  const scrollTo = useRef<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [txDate, setTxDate] = useState('');
   const [issuerId, setIssuerId] = useState('');
@@ -49,11 +49,17 @@ export default function Page() {
     const idx = wanted ? SAMPLES.findIndex(x => x.id === wanted) : -1;
     if (idx >= 0) openSample(idx);
     const tab = new URLSearchParams(window.location.search).get('tab');
-    if (idx >= 0 && (tab === 'plan' || tab === 'package' || tab === 'board')) setStage(tab);
+    if (idx >= 0 && tab && /^[a-z-]+$/.test(tab)) scrollTo.current = tab;
     return () => abort.current?.abort();
   }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 3500); return () => clearTimeout(t); }, [toast]);
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [stage, result]);
+  useEffect(() => {
+    if (!result) return;
+    const id = scrollTo.current;
+    scrollTo.current = null;
+    if (id) { setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 50); return; }
+    window.scrollTo({ top: 0 });
+  }, [result]);
 
   const combined = useMemo(() => combineSlots(slots), [slots]);
   const merchant = useMemo(() => result ? lookupMerchant(result.parsed.descriptor, result.parsed.merchant) : null, [result]);
@@ -80,11 +86,11 @@ export default function Page() {
   }
   function reset() {
     abort.current?.abort();
-    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setImages([]); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId(''); setStage('diagnose');
+    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setImages([]); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId('');
   }
   function openSample(index: number) {
     const s = SAMPLES[index];
-    setPrevious(null); setRevision(1); setStage('diagnose');
+    setPrevious(null); setRevision(1);
     applyResult(structuredClone(s.result), s.text, { issuerId: s.issuerId });
     setSlots({ ...s.slots });
   }
@@ -124,7 +130,7 @@ export default function Page() {
             if (result) { setPrevious(result); setRevision(n => n + 1); }
             applyResult(data, text, { keepChecks: !!result, txDate: result && txDate ? txDate : undefined });
             setImages([]);
-            setStage('diagnose');
+           
             finished = true;
           } else {
             setLoadStage(event.step === 'parse' ? 0 : event.step === 'connect' ? 1 : 2);
@@ -153,7 +159,7 @@ export default function Page() {
       const savedIssuer = ISSUERS.find(i => i.id === data.issuerId) ?? null;
       const references = Array.isArray(data.result.references) && data.result.references.length ? data.result.references : buildReferences(parsed, savedIssuer);
       const restored: CaseResult = { parsed, report, rules: searchRules(parsed.caseType), references, verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: data.result.mode === 'demo' ? 'demo' : 'live' };
-      setPrevious(null); setRevision(Number(data.revision) || 1); setStage('diagnose');
+      setPrevious(null); setRevision(Number(data.revision) || 1);
       applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined, issuerId: typeof data.issuerId === 'string' ? data.issuerId : '' });
       if (data.slots && typeof data.slots === 'object') setSlots({ ...EMPTY_SLOTS, ...data.slots });
     } catch { localStorage.removeItem(STORE); setSaved(false); setToast('저장한 사건이 만료됐거나 열 수 없어요.'); }
@@ -260,7 +266,6 @@ export default function Page() {
       ) : (
         <Workspace
           result={result} revision={revision} previous={previous} onDismissPrevious={() => setPrevious(null)}
-          stage={stage} setStage={setStage}
           merchant={merchant} plan={plan} mapping={mapping} evidence={evidence}
           checks={checks} toggle={toggle} txDate={txDate} setTxDate={setTxDate} deadlineRef={deadlineRef} readiness={readiness} form={form}
           issuer={issuer} issuerId={issuerId} setIssuerId={setIssuerId}

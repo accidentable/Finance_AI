@@ -40,17 +40,22 @@ test('plan adapts to case type and payment status', () => {
     assert.equal(new Set(ids).size, ids.length, 'step ids are unique');
     assert.equal(plan.flatMap(p => p.steps).filter(st => st.source === 'ai').length, s.result.report.actions.length);
   }
-  const theft = SAMPLES.find(s => s.id === 'apikey')!;
-  const plan = buildPlan(theft.result.parsed, lookupMerchant(theft.result.parsed.descriptor, null));
+  const theft = SAMPLES.find(s => s.id === 'aws')!;
+  const declined = { ...theft.result.parsed, paymentStatus: 'declined' as const };
+  const plan = buildPlan(declined, lookupMerchant(declined.descriptor, null));
   assert.ok(plan[0].steps.some(st => st.id === 'rotate'));
   assert.ok(plan[2].steps.some(st => st.id === 'issuer_block'), 'declined case prepares blocking, not filing');
-  const sub = SAMPLES.find(s => s.id === 'subscription')!;
-  assert.ok(buildPlan(sub.result.parsed, null)[2].steps.some(st => st.id === 'file'), 'posted case prepares filing');
+  const sub = { ...SAMPLES[0].result.parsed, caseType: 'cancelled_recurring' as const, paymentStatus: 'posted' as const };
+  assert.ok(buildPlan(sub, null)[2].steps.some(st => st.id === 'file'), 'posted case prepares filing');
 });
 
 test('evidence auto-check reads user facts and readiness counts only listed items', () => {
-  const sub = SAMPLES.find(s => s.id === 'subscription')!;
-  const checks = autoChecked(sub.result.parsed);
+  const subFacts = [
+    { label: '해지 요청', value: '8월 20일 · 해지 요청 완료', quote: '2026년 8월 20일 계정에서 구독 해지를 요청했습니다.' },
+    { label: '카드 거래', value: '9월 1일 · 29달러 매입', quote: '카드 앱 매입 내역에 2026년 9월 1일 USD 29.00이 있습니다.' },
+  ];
+  const sub = { ...SAMPLES[0].result.parsed, caseType: 'cancelled_recurring' as const, paymentStatus: 'posted' as const, facts: subFacts };
+  const checks = autoChecked(sub);
   assert.equal(checks.cancel_request, true);
   assert.equal(checks.transaction, true);
   assert.equal(checks.cancel_confirm, false);
@@ -61,11 +66,11 @@ test('evidence auto-check reads user facts and readiness counts only listed item
 });
 
 test('issuer form keeps placeholders for anything the user must confirm', () => {
-  const theft = SAMPLES.find(s => s.id === 'apikey')!;
+  const theft = SAMPLES.find(s => s.id === 'aws')!;
   const form = issuerForm(theft.result.parsed, lookupMerchant(theft.result.parsed.descriptor, null), REASON_CODES.credential_theft, theft.result.report.drafts.timeline);
   const get = (label: string) => form.find(f => f.label === label)!.value;
   assert.equal(get('신청인'), '[직접 입력]');
-  assert.equal(get('실제 사업자'), 'GAMMAAI');
-  assert.equal(get('거래일'), '2026-09-04');
+  assert.match(get('실제 사업자'), /Amazon Web Services|AMZN/);
+  assert.equal(get('거래일'), '2026-09-05');
   assert.match(get('분쟁 사유 (후보)'), /보류/);
 });

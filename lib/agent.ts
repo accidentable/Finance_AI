@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
-import { ParsedSchema, ReportSchema, guardParsed, deadlineFor, maskText, smsSection, type CaseResult } from './case';
+import { ParsedSchema, ReportSchema, guardParsed, deadlineFor, maskText, smsSection, type CaseResult, plainHeadline } from './case';
 import { searchRules, verifySender } from './rules';
 import { ISSUERS, findIssuer, parseNotification, reconcileWithNotification } from './knowledge';
 import { buildReferences } from './references';
@@ -26,7 +26,8 @@ const EXTRACT = BOUNDARY + ` 원문에서 사실을 추출한다.
 const REPORT = BOUNDARY + ` 제공된 parsed(사실)와 references(규정·정책 조각)로만 작성한다. 증명하지 않은 일을 진술서에 쓰지 않는다.
 - references에 없는 사유코드, 기한, 환불 조건, 절차를 만들지 않는다. 수치와 조건은 references 원문을 그대로 쓴다.
 - basis는 이 사건 판단의 근거 최대 4개. refId는 반드시 references의 id 중 하나이고, point는 그 근거가 이 사건에 어떻게 적용되는지 한 문장.
-- questions는 가장 중요한 추가 질문 최대 3개.
+- headline은 지금 상황을 있는 그대로 적은 한 문장(30자 이내). explanation은 딱 두 문장: 첫 문장은 지금 상황, 둘째 문장은 지금 당장 할 일 하나. 비유·은유·감탄·수사(퍼즐, 지혈, 여정 같은 말) 금지. 용어는 풀어 쓴다(매입 → 카드사가 청구를 확정함).
+- questions는 가장 중요한 추가 질문 최대 3개. 질문마다 why는 "이걸 알면 무엇이 달라지는지" 한 문장.
 - actions는 최대 3개, sourceId는 references의 id만. 고정 절차(키 삭제, 가맹점 문의, 카드사 양식 확인)는 이미 별도 플레이북에 있으므로 이 사건에만 해당하는 구체적 행동을 쓴다.
 - routes에는 merchant, issuer, kca 각 1개. issuer는 승인 거절이어도 반복 결제 방지 상담으로 유지한다. 카드사 references가 있으면 그 카드사의 채널과 기한 문구를 note에 반영한다.
 - API 키 악용을 카드 도용 사유코드로 매핑하지 않는다. kca는 개인/사업용 여부 등 상담 대상 확인 필요. missing은 확인 항목이며 법정 필수 서류라고 표현하지 않는다.
@@ -100,6 +101,7 @@ export async function runAgent(input: string, emit: (event: StepEvent) => void, 
   const report = ReportSchema.parse(response.output_parsed);
   const known = new Set(references.map(r => r.id));
   report.questions = report.questions.slice(0, 3);
+  report.headline = plainHeadline(report.headline, parsed);
   report.basis = report.basis.filter(b => known.has(b.refId) && b.point.trim()).slice(0, 4);
   report.actions = report.actions.slice(0, 3).map(a => ({ ...a, sourceId: known.has(a.sourceId) ? a.sourceId : references[0].id }));
 
