@@ -5,6 +5,7 @@ import { SAMPLES } from '@/lib/samples';
 import { CASE_LABEL, EMPTY_SLOTS, PAYMENT_LABEL, SIGNAL_LABEL, combineSlots, maskText, ParsedSchema, ReportSchema, deadlineFor, type CaseResult, type Slots } from '@/lib/case';
 import { searchRules, verifySender } from '@/lib/rules';
 import { REASON_CODES, autoChecked, buildPlan, evidenceFor, issuerForm, lookupMerchant, readiness as computeReadiness, referenceDeadline } from '@/lib/playbook';
+import { ISSUERS, VERIFIED_LABEL, findIssuer, issuerReasonFor } from '@/lib/knowledge';
 import { Icon } from '@/components/Icon';
 import { Landing } from '@/components/Landing';
 import { Workspace, type Stage } from '@/components/Workspace';
@@ -26,6 +27,7 @@ export default function Page() {
   const [stage, setStage] = useState<Stage>('diagnose');
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [txDate, setTxDate] = useState('');
+  const [issuerId, setIssuerId] = useState('');
   const [revision, setRevision] = useState(1);
   const [saved, setSaved] = useState(false);
   const [toast, setToast] = useState('');
@@ -46,26 +48,29 @@ export default function Page() {
 
   const combined = useMemo(() => combineSlots(slots), [slots]);
   const merchant = useMemo(() => result ? lookupMerchant(result.parsed.descriptor, result.parsed.merchant) : null, [result]);
-  const plan = useMemo(() => result ? buildPlan(result.parsed, merchant, result.report.actions) : [], [result, merchant]);
+  const issuer = useMemo(() => ISSUERS.find(i => i.id === issuerId) ?? null, [issuerId]);
+  const plan = useMemo(() => result ? buildPlan(result.parsed, merchant, result.report.actions, issuer) : [], [result, merchant, issuer]);
   const mapping = result ? REASON_CODES[result.parsed.caseType] : null;
   const evidence = useMemo(() => result ? evidenceFor(result.parsed.caseType) : [], [result]);
   const deadlineRef = useMemo(() => referenceDeadline(txDate || null), [txDate]);
   const readiness = useMemo(() => computeReadiness(evidence, Object.fromEntries(evidence.map(i => [i.id, !!checks[`ev:${i.id}`]]))), [evidence, checks]);
-  const form = useMemo(() => result ? issuerForm(result.parsed, merchant, mapping, result.report.drafts.timeline) : [], [result, merchant, mapping]);
+  const form = useMemo(() => result ? issuerForm(result.parsed, merchant, mapping, result.report.drafts.timeline, issuer) : [], [result, merchant, mapping, issuer]);
 
-  function applyResult(data: CaseResult, text: string, opts: { keepChecks?: boolean; checks?: Record<string, boolean>; txDate?: string } = {}) {
+  function applyResult(data: CaseResult, text: string, opts: { keepChecks?: boolean; checks?: Record<string, boolean>; txDate?: string; issuerId?: string } = {}) {
     const auto = Object.fromEntries(Object.entries(autoChecked(data.parsed)).map(([k, v]) => [`ev:${k}`, v]));
     const noPosting = data.parsed.paymentStatus === 'declined' || data.parsed.paymentStatus === 'invoice_only';
     setResult(data);
     setHistory(text);
     setChecks(prev => ({ ...auto, ...(opts.keepChecks ? prev : {}), ...(opts.checks || {}) }));
     setTxDate(opts.txDate ?? (noPosting ? '' : data.parsed.transactionDate || ''));
+    if (opts.issuerId !== undefined) setIssuerId(opts.issuerId);
+    else setIssuerId(prev => prev || findIssuer(text)?.id || '');
     setFollowup('');
     setError('');
   }
   function reset() {
     abort.current?.abort();
-    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setStage('diagnose');
+    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId(''); setStage('diagnose');
   }
   function openSample(index: number) {
     const s = SAMPLES[index];
@@ -122,7 +127,7 @@ export default function Page() {
   }
   function save() {
     try {
-      localStorage.setItem(STORE, JSON.stringify({ result, history, slots, revision, checks, txDate, expires: Date.now() + 7 * 86400000 }));
+      localStorage.setItem(STORE, JSON.stringify({ result, history, slots, revision, checks, txDate, issuerId, expires: Date.now() + 7 * 86400000 }));
       setSaved(true);
       setToast('이 브라우저에 7일간 저장했어요. 체크 상태도 함께 저장됩니다.');
     } catch { setToast('브라우저 저장 공간을 사용할 수 없습니다.'); }
@@ -135,7 +140,7 @@ export default function Page() {
       const report = ReportSchema.parse(data.result.report);
       const restored: CaseResult = { parsed, report, rules: searchRules(parsed.caseType), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: data.result.mode === 'demo' ? 'demo' : 'live' };
       setPrevious(null); setRevision(Number(data.revision) || 1); setStage('diagnose');
-      applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined });
+      applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined, issuerId: typeof data.issuerId === 'string' ? data.issuerId : '' });
       if (data.slots && typeof data.slots === 'object') setSlots({ ...EMPTY_SLOTS, ...data.slots });
     } catch { localStorage.removeItem(STORE); setSaved(false); setToast('저장된 사건이 만료되었거나 열 수 없습니다.'); }
   }
@@ -161,6 +166,17 @@ export default function Page() {
       '## 사유코드 후보', mapping ? `- Visa ${mapping.visa.code} ${mapping.visa.name}\n- Mastercard ${mapping.mastercard.code} ${mapping.mastercard.name}\n- ${mapping.summary}\n- 주의: ${mapping.caution}` : '- 유형 미확정',
       '', `## 증빙 체크리스트 (${readiness.done}/${readiness.total})`, ...evidence.map(i => `- [${checks[`ev:${i.id}`] ? 'x' : ' '}] ${i.label} · ${i.hint}`),
       '', '## 카드사 이의신청서 항목', ...form.map(f => `- ${f.label}: ${f.value}`),
+      ...(issuer ? [
+        '', `## ${issuer.name} 해외이용 이의신청 안내 (${VERIFIED_LABEL[issuer.verified]}, 조회 ${issuer.sources[0]?.accessed ?? ''})`,
+        `- 고객센터: ${issuer.phone}`,
+        ...issuer.channels.map(c => `- 채널: ${c.label}${c.url ? ` (${c.url})` : ''}`),
+        `- 기한 안내: ${issuer.deadline}`,
+        `- 처리 기간: ${issuer.processing}`,
+        ...(issuerReasonFor(issuer, parsed.caseType) ? [`- 이 사건의 사유 명칭: ${issuerReasonFor(issuer, parsed.caseType)}`] : []),
+        ...(issuer.documents.length ? [`- 서류: ${issuer.documents.join(' / ')}`] : []),
+        ...issuer.notes.map(n => `- 유의: ${n}`),
+        ...issuer.sources.map(s => `- 출처: [${s.title}](${s.url})`),
+      ] : []),
       '', '## 영문 문의 초안', '```', report.drafts.email, '```',
       '', '## 국문 사실 정리', '```', report.drafts.statement, '```',
       '', '## 타임라인', '```', report.drafts.timeline, '```',
@@ -212,6 +228,7 @@ export default function Page() {
           stage={stage} setStage={setStage}
           merchant={merchant} plan={plan} mapping={mapping} evidence={evidence}
           checks={checks} toggle={toggle} txDate={txDate} setTxDate={setTxDate} deadlineRef={deadlineRef} readiness={readiness} form={form}
+          issuer={issuer} issuerId={issuerId} setIssuerId={setIssuerId}
           followup={followup} setFollowup={setFollowup} onFollowup={() => prepare(`${history}\n\n[추가 자료 / 사용자의 새 설명]\n${followup}`)}
           busy={busy} error={error} onAnswer={answer} onCopy={copy} onExport={exportMarkdown}
         />

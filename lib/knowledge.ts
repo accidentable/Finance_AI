@@ -43,6 +43,29 @@ export function findIssuer(text: string | null | undefined): Issuer | null {
   return null;
 }
 
+export const VERIFIED_LABEL: Record<Verified, string> = {
+  official: '공식 페이지 확인',
+  partial: '일부 확인 · 카드사 확인 필요',
+  secondary: '2차 자료 · 원문 대조 필요',
+  community: '이용자 경험 · 확정 아님',
+  'pattern-only': '패턴만 · 샘플 미검증',
+};
+
+// 사건 유형을 카드사가 쓰는 사유 명칭으로 옮긴다. 카드사 목록에 맞는 문구가 없으면 null.
+const REASON_KEYWORDS: Record<CaseType, string[]> = {
+  cancelled_recurring: ['취소', '해지'],
+  duplicate: ['이중', '중복'],
+  billing_error: ['금액', '상이', '정정', '오류'],
+  credential_theft: ['미사용', '사용사실', '부정', '본인', '결제하지 않은'],
+  not_received: ['미수령', '미제공', '받지 못', '미도착'],
+  unknown: [],
+};
+export function issuerReasonFor(issuer: Issuer | null, caseType: CaseType): string | null {
+  if (!issuer) return null;
+  const keys = REASON_KEYWORDS[caseType];
+  return issuer.reasons.find(r => keys.some(k => r.includes(k))) ?? null;
+}
+
 export function findMerchantPolicy(descriptor: string | null, merchant: string | null): MerchantPolicy | null {
   for (const text of [descriptor, merchant]) {
     if (!text) continue;

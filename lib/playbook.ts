@@ -1,4 +1,5 @@
 import type { CaseType, Parsed, Report } from './case';
+import { issuerReasonFor, type Issuer } from './knowledge';
 
 // 가맹점 표기(디스크립터) 해독 사전. 카드 문자에 찍히는 표기를 실제 서비스와 공식 창구로 연결한다.
 export type Merchant = {
@@ -226,27 +227,38 @@ function merchantSteps(parsed: Parsed, merchant: Merchant | null): Step[] {
   return steps;
 }
 
-function issuerSteps(parsed: Parsed): Step[] {
+function issuerSteps(parsed: Parsed, issuer: Issuer | null): Step[] {
   const noPosting = parsed.paymentStatus === 'declined' || parsed.paymentStatus === 'invoice_only';
-  return noPosting
-    ? [
-        { id: 'issuer_block', title: '카드사에 반복 시도 차단 상담', detail: '매입이 없어도 재시도 방지와 해외결제 차단은 지금 상담할 수 있습니다.', source: 'rule' },
-        { id: 'watch', title: '매입 발생 여부 매일 확인', detail: '매입이 생기면 그 날짜가 기준일이 됩니다. 이 보드로 돌아와 갱신하세요.', source: 'rule' },
-      ]
-    : [
-        { id: 'evidence', title: '이의신청 패키지의 증빙 체크리스트 채우기', detail: '빠진 항목은 가맹점 회신을 기다리는 동안 준비합니다.', source: 'rule' },
-        { id: 'issuer_form', title: '카드사 앱·고객센터에서 해외이용 이의신청 요건과 양식 확인', detail: '카드사마다 양식과 접수 채널이 다릅니다. 미리 채운 항목을 옮겨 적습니다.', source: 'rule' },
-        { id: 'file', title: '가맹점이 거절하거나 무응답이면 접수', detail: '가맹점 회신 또는 무응답 기록을 첨부합니다. 접수 후 가맹점 답변에 45일이 걸릴 수 있습니다.', source: 'rule' },
-      ];
+  const primary = issuer?.channels.find(c => c.type === 'web' || c.type === 'app') ?? issuer?.channels[0];
+  const link = primary?.url ? { label: `${issuer!.name} 접수 화면`, url: primary.url } : undefined;
+  const reason = issuer ? issuerReasonFor(issuer, parsed.caseType) : null;
+  if (noPosting) {
+    return [
+      { id: 'issuer_block', title: issuer ? `${issuer.name}에 반복 시도 차단 상담 (${issuer.phone})` : '카드사에 반복 시도 차단 상담', detail: '매입이 없어도 재시도 방지와 해외결제 차단은 지금 상담할 수 있습니다.', link, source: 'rule' },
+      { id: 'watch', title: '매입 발생 여부 매일 확인', detail: issuer ? `매입이 생기면 그 날짜가 기준일입니다. ${issuer.name} 안내: ${issuer.deadline}` : '매입이 생기면 그 날짜가 기준일이 됩니다. 이 보드로 돌아와 갱신하세요.', source: 'rule' },
+    ];
+  }
+  return [
+    { id: 'evidence', title: '이의신청 패키지의 증빙 체크리스트 채우기', detail: issuer?.documents.length ? `${issuer.name}가 안내하는 서류: ${issuer.documents.join(', ')}` : '빠진 항목은 가맹점 회신을 기다리는 동안 준비합니다.', source: 'rule' },
+    {
+      id: 'issuer_form',
+      title: issuer ? `${issuer.name} 해외이용 이의신청 접수 화면 열기` : '카드사 앱·고객센터에서 해외이용 이의신청 요건과 양식 확인',
+      detail: issuer
+        ? `${primary?.label ?? issuer.phone}. 기한 안내: ${issuer.deadline}.${reason ? ` 사유는 "${reason}"으로 선택합니다.` : ''}`
+        : '카드사마다 양식과 접수 채널이 다릅니다. 사건 티켓에서 카드사를 고르면 채널과 기한을 보여줍니다.',
+      link, source: 'rule',
+    },
+    { id: 'file', title: '가맹점이 거절하거나 무응답이면 접수', detail: issuer ? `가맹점 회신 또는 무응답 기록을 첨부합니다. ${issuer.name} 처리 기간 안내: ${issuer.processing}` : '가맹점 회신 또는 무응답 기록을 첨부합니다. 접수 후 가맹점 답변에 45일이 걸릴 수 있습니다.', source: 'rule' },
+  ];
 }
 
-export function buildPlan(parsed: Parsed, merchant: Merchant | null, actions: Report['actions'] = []): Phase[] {
+export function buildPlan(parsed: Parsed, merchant: Merchant | null, actions: Report['actions'] = [], issuer: Issuer | null = null): Phase[] {
   const ai = (urgency: Report['actions'][number]['urgency']) =>
     actions.filter(a => a.urgency === urgency).map((a, i) => ({ id: `ai-${urgency}-${i}`, title: a.title, detail: a.description, source: 'ai' as const }));
   return [
     { id: 'stop', title: '지혈', window: '0~2시간', goal: '추가 청구를 막고 증거를 얼립니다', steps: [...stopSteps(parsed, merchant), ...ai('now')] },
     { id: 'merchant', title: '가맹점', window: '24시간 안에', goal: '가장 빨리 환불되는 경로입니다', steps: [...merchantSteps(parsed, merchant), ...ai('today')] },
-    { id: 'issuer', title: '카드사 준비', window: '72시간 안에', goal: '거절에 대비해 접수 서류를 갖춥니다', steps: [...issuerSteps(parsed), ...ai('next')] },
+    { id: 'issuer', title: '카드사 준비', window: '72시간 안에', goal: '거절에 대비해 접수 서류를 갖춥니다', steps: [...issuerSteps(parsed, issuer), ...ai('next')] },
   ];
 }
 
@@ -266,11 +278,18 @@ export function referenceDeadline(transactionDate: string | null, today = new Da
 }
 
 // 카드사 이의신청서에 옮겨 적을 항목. 실제 양식은 카드사마다 다르다.
-export function issuerForm(parsed: Parsed, merchant: Merchant | null, mapping: ReasonMapping | null, timeline: string): { label: string; value: string }[] {
+export function issuerForm(parsed: Parsed, merchant: Merchant | null, mapping: ReasonMapping | null, timeline: string, issuer: Issuer | null = null): { label: string; value: string }[] {
   const seller = sellerFromDescriptor(parsed.descriptor);
+  const issuerReason = issuerReasonFor(issuer, parsed.caseType);
+  const primary = issuer?.channels.find(c => c.type === 'web' || c.type === 'app') ?? issuer?.channels[0];
   return [
     { label: '신청인', value: '[직접 입력]' },
-    { label: '카드사 · 카드번호', value: '[카드사 앱에서 확인]' },
+    { label: '카드사 · 카드번호', value: issuer ? `${issuer.name} · [카드번호는 앱에서 확인]` : '[카드사 앱에서 확인]' },
+    ...(issuer ? [
+      { label: '접수 채널', value: primary?.label ?? issuer.phone },
+      { label: '카드사 사유 명칭', value: issuerReason ?? '[카드사 사유 목록에서 가장 가까운 항목 선택]' },
+      { label: '카드사 기한 안내', value: issuer.deadline },
+    ] : []),
     { label: '거래일', value: parsed.transactionDate || '[카드 앱에서 확인]' },
     { label: '가맹점 표기', value: parsed.descriptor || parsed.merchant || '[카드 문자의 표기 그대로]' },
     { label: '실제 사업자', value: seller || merchant?.name || parsed.merchant || '[확인 필요]' },

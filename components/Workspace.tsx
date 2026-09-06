@@ -2,7 +2,9 @@
 
 import { CASE_LABEL, PAYMENT_LABEL, type CaseResult } from '@/lib/case';
 import type { EvidenceItem, Merchant, Phase, ReasonMapping } from '@/lib/playbook';
+import type { Issuer } from '@/lib/knowledge';
 import { Icon } from './Icon';
+import { IssuerSelect } from './IssuerSelect';
 import { Diagnose } from './Diagnose';
 import { Plan } from './Plan';
 import { Package } from './Package';
@@ -35,6 +37,9 @@ type Props = {
   deadlineRef: { due: string; daysLeft: number } | null;
   readiness: { done: number; total: number; pct: number };
   form: { label: string; value: string }[];
+  issuer: Issuer | null;
+  issuerId: string;
+  setIssuerId: (id: string) => void;
   followup: string;
   setFollowup: (v: string) => void;
   onFollowup: () => void;
@@ -75,10 +80,11 @@ export function Workspace(p: Props) {
           <div className={`stamp ${result.mode === 'demo' ? 'demo' : ''}`} aria-hidden="true">
             <div className="stamp__inner"><span className="stamp__top">{result.mode === 'demo' ? '합성 예시' : '분석 완료'}</span><span className="stamp__date">{stampDate()}</span><span className="stamp__bottom">분쟁72</span></div>
           </div>
-          <dl className="details">
+          <dl className="details details--5">
             <div className="details__cell"><dt>가맹점</dt><dd>{merchant ? merchant.name : parsed.merchant || '미확인'}{parsed.descriptor && <code>{parsed.descriptor}</code>}</dd></div>
             <div className="details__cell"><dt>금액</dt><dd><span className="mono">{parsed.amount || '확인 필요'}</span></dd></div>
             <div className="details__cell"><dt>거래 상태</dt><dd><span className={`pill status-${parsed.paymentStatus}`}>{PAYMENT_LABEL[parsed.paymentStatus]}</span></dd></div>
+            <div className="details__cell details__cell--select"><dt>카드사</dt><dd><IssuerSelect value={p.issuerId} onChange={p.setIssuerId} />{p.issuer && <code>{p.issuer.phone}</code>}</dd></div>
             <div className="details__cell"><dt>참고 기한</dt><dd className={deadlineRef && deadlineRef.daysLeft <= 30 ? 'urgent' : ''}><span className="mono">{dday}</span>{deadlineRef && <code>{deadlineRef.due} 까지</code>}</dd></div>
           </dl>
         </div>
@@ -105,7 +111,7 @@ export function Workspace(p: Props) {
       <div className="stage-body">
         {stage === 'diagnose' && <Diagnose result={result} merchant={merchant} onAnswer={p.onAnswer} />}
         {stage === 'plan' && <Plan result={result} plan={p.plan} checks={p.checks} toggle={p.toggle} txDate={p.txDate} setTxDate={p.setTxDate} deadlineRef={deadlineRef} onGoPackage={() => setStage('package')} />}
-        {stage === 'package' && <Package result={result} merchant={merchant} mapping={p.mapping} evidence={p.evidence} checks={p.checks} toggle={p.toggle} readiness={p.readiness} form={p.form} deadlineRef={deadlineRef} onCopy={p.onCopy} onExport={p.onExport} />}
+        {stage === 'package' && <Package result={result} merchant={merchant} mapping={p.mapping} evidence={p.evidence} checks={p.checks} toggle={p.toggle} readiness={p.readiness} form={p.form} deadlineRef={deadlineRef} issuer={p.issuer} issuerId={p.issuerId} setIssuerId={p.setIssuerId} onCopy={p.onCopy} onExport={p.onExport} />}
         {stage === 'board' && <Board result={result} onAnswer={p.onAnswer} />}
       </div>
 

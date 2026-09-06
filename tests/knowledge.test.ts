@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { AUTHORITIES, ISSUERS, MERCHANT_POLICIES, REASON_CODE_LIST, findIssuer, findMerchantPolicy, parseNotification, reasonCodesFor, reconcileWithNotification } from '../lib/knowledge';
+import { AUTHORITIES, ISSUERS, MERCHANT_POLICIES, REASON_CODE_LIST, findIssuer, findMerchantPolicy, issuerReasonFor, parseNotification, reasonCodesFor, reconcileWithNotification } from '../lib/knowledge';
+import { REASON_CODES, buildPlan, issuerForm } from '../lib/playbook';
 import patterns from '../data/notification-patterns.json';
 import { CASE_TYPES } from '../lib/case';
 import { SAMPLES } from '../lib/samples';
@@ -72,6 +73,25 @@ test('notification patterns compile and parse the documented examples', () => {
     const n = parseNotification(s.slots.sms);
     assert.equal(n.descriptor, s.result.parsed.descriptor, s.id);
   }
+});
+
+test('issuer reason mapping and plan wiring use the selected issuer', () => {
+  const kb = ISSUERS.find(i => i.id === 'kb')!;
+  const bc = ISSUERS.find(i => i.id === 'bc')!;
+  assert.equal(issuerReasonFor(kb, 'cancelled_recurring'), '취소 미처리');
+  assert.equal(issuerReasonFor(bc, 'duplicate'), '이중청구 및 금액오류');
+  assert.equal(issuerReasonFor(kb, 'not_received'), '결제 후 물품·서비스 미제공');
+  assert.equal(issuerReasonFor(null, 'duplicate'), null);
+  const sub = SAMPLES.find(s => s.id === 'subscription')!;
+  const plan = buildPlan(sub.result.parsed, null, [], kb);
+  const step = plan[2].steps.find(s => s.id === 'issuer_form')!;
+  assert.match(step.title, /KB국민카드/);
+  assert.match(step.detail, /110일/);
+  assert.ok(step.link?.url.startsWith('https://'));
+  const form = issuerForm(sub.result.parsed, null, REASON_CODES.cancelled_recurring, '', kb);
+  assert.equal(form.find(f => f.label === '카드사 사유 명칭')?.value, '취소 미처리');
+  assert.ok(form.find(f => f.label === '접수 채널'));
+  assert.ok(!issuerForm(sub.result.parsed, null, null, '').some(f => f.label === '접수 채널'));
 });
 
 test('reconcile fills descriptor and amount only when extraction left them empty', () => {

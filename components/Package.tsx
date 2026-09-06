@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { CASE_LABEL, type CaseResult } from '@/lib/case';
 import type { EvidenceItem, Merchant, ReasonMapping } from '@/lib/playbook';
+import { VERIFIED_LABEL, issuerReasonFor, type Issuer } from '@/lib/knowledge';
 import { Icon } from './Icon';
+import { IssuerSelect } from './IssuerSelect';
 
 type Draft = 'email' | 'statement' | 'timeline';
 const DRAFT_LABEL: Record<Draft, string> = { email: '영문 문의 메일', statement: '국문 사실 정리', timeline: '타임라인' };
+const CHANNEL_LABEL: Record<string, string> = { web: '홈페이지', app: '앱', phone: '전화', branch: '영업점', fax: '팩스', mail: '우편', email: '이메일' };
 
 type Props = {
   result: CaseResult;
@@ -18,6 +21,9 @@ type Props = {
   readiness: { done: number; total: number; pct: number };
   form: { label: string; value: string }[];
   deadlineRef: { due: string; daysLeft: number } | null;
+  issuer: Issuer | null;
+  issuerId: string;
+  setIssuerId: (id: string) => void;
   onCopy: (text: string, label: string) => void;
   onExport: () => void;
 };
@@ -30,13 +36,80 @@ function caseNumber(title: string, date: string | null) {
   return `D72·${d}·${code}`;
 }
 
-export function Package({ result, merchant, mapping, evidence, checks, toggle, readiness, form, deadlineRef, onCopy, onExport }: Props) {
+function IssuerGuide({ issuer, issuerId, setIssuerId, result }: { issuer: Issuer | null; issuerId: string; setIssuerId: (id: string) => void; result: CaseResult }) {
+  if (!issuer) {
+    return (
+      <section className="sheet sheet--tint issuer-empty">
+        <div className="sheet__h"><Icon name="building" size={14} /> 카드사 접수 안내</div>
+        <p>카드사를 고르면 그 카드사의 접수 채널, 기한 안내, 필요 서류, 처리 기간을 보여주고 아래 신청서 항목에 사유 명칭을 맞춥니다.</p>
+        <div className="issuer-pick"><IssuerSelect value={issuerId} onChange={setIssuerId} /></div>
+      </section>
+    );
+  }
+  const reason = issuerReasonFor(issuer, result.parsed.caseType);
+  const accessed = issuer.sources[0]?.accessed;
+  return (
+    <section className="sheet">
+      <div className="sheet__head">
+        <div className="sheet__h"><Icon name="building" size={14} /> {issuer.name} 해외이용 이의신청</div>
+        <span className={`verify-badge ${issuer.verified}`}>{VERIFIED_LABEL[issuer.verified]}</span>
+      </div>
+      <dl className="details guide-details">
+        <div className="details__cell"><dt>고객센터</dt><dd><span className="mono">{issuer.phone}</span></dd></div>
+        <div className="details__cell"><dt>기한 안내</dt><dd className="small">{issuer.deadline}</dd></div>
+        <div className="details__cell"><dt>처리 기간</dt><dd className="small">{issuer.processing}</dd></div>
+        <div className="details__cell"><dt>이 사건의 사유 명칭</dt><dd className="small">{reason ?? '목록에서 가장 가까운 항목 선택'}</dd></div>
+      </dl>
+      <div className="grid-2 guide-grid">
+        <div>
+          <p className="label label--strong">접수 채널</p>
+          <ul className="guide-list">
+            {issuer.channels.map((c, i) => (
+              <li key={i}>
+                <span className="pill">{CHANNEL_LABEL[c.type] ?? c.type}</span>
+                <span>{c.url ? <a href={c.url} target="_blank" rel="noopener noreferrer">{c.label} <Icon name="external" size={10} /></a> : c.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          {issuer.reasons.length > 0 && (
+            <>
+              <p className="label label--strong">카드사 사유 목록</p>
+              <ul className="guide-list">
+                {issuer.reasons.map(r => <li key={r} className={r === reason ? 'hit' : ''}><span className="dot" />{r}</li>)}
+              </ul>
+            </>
+          )}
+          {issuer.documents.length > 0 && (
+            <>
+              <p className="label label--strong">필요 서류</p>
+              <ul className="guide-list">
+                {issuer.documents.map(d => <li key={d}><span className="dot" />{d}</li>)}
+              </ul>
+            </>
+          )}
+        </div>
+      </div>
+      {issuer.notes.length > 0 && (
+        <ul className="guide-notes">
+          {issuer.notes.map(n => <li key={n}><Icon name="alert" size={12} />{n}</li>)}
+        </ul>
+      )}
+      <p className="sources">출처{accessed ? ` · 조회 ${accessed}` : ''}: {issuer.sources.map((s, i) => <span key={s.url}>{i > 0 && ' · '}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a></span>)}</p>
+    </section>
+  );
+}
+
+export function Package({ result, merchant, mapping, evidence, checks, toggle, readiness, form, deadlineRef, issuer, issuerId, setIssuerId, onCopy, onExport }: Props) {
   const [draft, setDraft] = useState<Draft>('email');
   const { parsed, report } = result;
   const formText = form.map(f => `${f.label}: ${f.value}`).join('\n');
   const number = caseNumber(parsed.title, parsed.transactionDate);
   return (
     <div className="stage">
+      <IssuerGuide issuer={issuer} issuerId={issuerId} setIssuerId={setIssuerId} result={result} />
+
       <div className="grid-2">
         <section className="sheet">
           <div className="sheet__h"><Icon name="scale" size={14} /> 사유코드 후보</div>
@@ -83,7 +156,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
 
       <section className="sheet">
         <div className="sheet__head">
-          <div className="sheet__h"><Icon name="card" size={14} /> 카드사 이의신청서 미리 채우기</div>
+          <div className="sheet__h"><Icon name="card" size={14} /> {issuer ? `${issuer.name} ` : '카드사 '}이의신청서 미리 채우기</div>
           <button className="ghostbtn small" onClick={() => onCopy(formText, '신청서 항목')}><Icon name="copy" size={13} /> 항목 복사</button>
         </div>
         <table className="form-table">
@@ -91,7 +164,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
             {form.map(f => <tr key={f.label}><th>{f.label}</th><td>{f.value}</td></tr>)}
           </tbody>
         </table>
-        <p className="fine">카드사마다 양식과 접수 채널이 다릅니다. 카드사 앱의 해외이용 이의신청 메뉴나 고객센터에서 양식을 받아 위 항목을 옮겨 적으세요.{merchant?.processor ? ' 결제대행 표기라서 실제 판매자 이름을 함께 적어야 합니다.' : ''}</p>
+        <p className="fine">{issuer ? `${issuer.name} 양식은 접수 화면에서 받아 위 항목을 옮겨 적으세요.` : '카드사마다 양식과 접수 채널이 다릅니다. 위에서 카드사를 고르면 채널과 사유 명칭을 맞춰 줍니다.'}{merchant?.processor ? ' 결제대행 표기라서 실제 판매자 이름을 함께 적어야 합니다.' : ''}</p>
       </section>
 
       <section className="ticket" aria-label="제출 초안">
