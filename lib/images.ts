@@ -41,3 +41,12 @@ export async function downscaleImage(file: File, maxSide = 1600, quality = 0.85)
   const dataUrl = canvas.toDataURL('image/jpeg', quality);
   return { mime: 'image/jpeg', data: dataUrl.slice(dataUrl.indexOf(',') + 1) };
 }
+
+// 클립보드나 드래그에 든 이미지 파일만 골라낸다. 텍스트 붙여넣기는 그대로 둔다.
+export function imageFilesFrom(dt: DataTransfer | null): File[] {
+  if (!dt) return [];
+  const files = Array.from(dt.files ?? []);
+  const fromItems = Array.from(dt.items ?? []).filter(i => i.kind === 'file' && i.type.startsWith('image/')).map(i => i.getAsFile()).filter((f): f is File => !!f);
+  const all = files.length ? files : fromItems;
+  return all.filter(f => f.type.startsWith('image/'));
+}

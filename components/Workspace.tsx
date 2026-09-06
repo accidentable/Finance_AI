@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { CASE_LABEL, PAYMENT_LABEL, type CaseResult } from '@/lib/case';
 import type { EvidenceItem, Merchant, Phase, ReasonMapping } from '@/lib/playbook';
 import type { Issuer } from '@/lib/knowledge';
-import { MAX_IMAGES, type ImageInput } from '@/lib/images';
+import { MAX_IMAGES, imageFilesFrom, type ImageInput } from '@/lib/images';
 import { Icon } from './Icon';
 import { IssuerSelect } from './IssuerSelect';
 import { Diagnose } from './Diagnose';
@@ -136,7 +136,7 @@ export function Workspace(p: Props) {
         )}
         <form className="followup" onSubmit={e => { e.preventDefault(); if (canSend) p.onFollowup(); }}>
           <button type="button" className="iconbtn followup__attach" onClick={() => upload.current?.click()} disabled={p.busy || p.images.length >= MAX_IMAGES} aria-label="사진 첨부" title="사진 첨부"><Icon name="camera" size={20} /></button>
-          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="답장이나 사진을 추가해요" rows={1} />
+          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="답장이나 사진을 추가해요" rows={1} onPaste={e => { const files = imageFilesFrom(e.clipboardData); if (files.length) { e.preventDefault(); p.onUpload(files); } }} />
           <button className="inkbtn" disabled={!canSend}>다시 분석 <Icon name="arrow" size={16} /></button>
         </form>
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden ref={upload} onChange={e => { const files = Array.from(e.target.files ?? []); if (files.length) p.onUpload(files); e.target.value = ''; }} />

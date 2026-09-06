@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { SAMPLES } from '@/lib/samples';
 import { SLOT_META, type Slots } from '@/lib/case';
 import { parseNotification } from '@/lib/knowledge';
-import { MAX_IMAGES, type ImageInput } from '@/lib/images';
+import { MAX_IMAGES, imageFilesFrom, type ImageInput } from '@/lib/images';
 import { Icon } from './Icon';
 
 const TYPE_LABEL = { approved: '해외승인', declined: '승인 거절', cancelled: '승인 취소' } as const;
@@ -57,7 +57,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
           </div>
           <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
 
-          <form className="slots" onSubmit={e => { e.preventDefault(); onSubmit(); }}>
+          <form className="slots" onSubmit={e => { e.preventDefault(); onSubmit(); }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = imageFilesFrom(e.dataTransfer); if (files.length) { e.preventDefault(); onUpload(files); } }}>
             {SLOT_META.map((m, i) => (
               <label key={m.key} className={`slot ${i === 0 ? 'slot--primary' : ''}`}>
                 <span className="slot__h"><Icon name={SLOT_ICON[m.key]} size={16} />{m.label}<span className="right">{m.hint}</span></span>
@@ -68,6 +68,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
                   maxLength={12000}
                   rows={i === 0 ? 4 : 2}
                   onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
+                  onPaste={e => { const files = imageFilesFrom(e.clipboardData); if (files.length) { e.preventDefault(); onUpload(files); } }}
                 />
                 {m.key === 'sms' && <ParsedPreview text={slots.sms} />}
               </label>
@@ -87,7 +88,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
                   ))}
                 </ul>
               )}
-              <p className="attachments__hint">카드번호와 이름은 지우고 올려 주세요.</p>
+              <p className="attachments__hint">입력칸에 Ctrl+V로 붙여넣어도 돼요. 카드번호와 이름은 지우고 올려 주세요.</p>
             </div>
             <div className="entry__actions">
               <span className="entry__note"><Icon name="shield" size={16} /> 보내기 전에 가린 내용을 보여드려요</span>
