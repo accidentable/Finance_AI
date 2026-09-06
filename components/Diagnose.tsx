@@ -11,33 +11,36 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
   const seller = sellerFromDescriptor(parsed.descriptor);
   return (
     <div className="stage">
-      <section className="card hero">
-        <span className="eyebrow">{result.mode === 'demo' ? '합성 예시의 판단 요약' : 'AI 판단 요약'}</span>
+      <section className="sheet hero">
+        <div className="sheet__h"><Icon name="sparkle" size={14} /> {result.mode === 'demo' ? '합성 예시의 판단 요약' : 'AI 판단 요약'}</div>
         <h2>{report.headline}</h2>
         <p>{report.explanation}</p>
       </section>
 
       <div className="grid-2">
-        <section className="card">
-          <h3><Icon name="radar" size={17} /> 탐지된 이상 신호 <span className="count">{parsed.signals.length}</span></h3>
+        <section className="sheet">
+          <div className="sheet__h"><Icon name="radar" size={14} /> 탐지된 이상 신호 <span className="count">{parsed.signals.length}</span></div>
           {parsed.signals.length === 0 ? (
             <p className="empty">원문에서 뚜렷한 이상 신호를 찾지 못했습니다. 아래 사실과 질문으로 상황을 좁혀 보세요.</p>
           ) : (
             <ul className="signals">
               {parsed.signals.map(s => (
                 <li key={s.kind}>
-                  <div className="signal-head"><span className="signal-dot" /><b>{SIGNAL_LABEL[s.kind]}</b></div>
-                  <p>{SIGNAL_HINT[s.kind]}</p>
-                  <blockquote>“{s.evidence}”</blockquote>
+                  <span className="leg__node" aria-hidden="true" />
+                  <div>
+                    <b>{SIGNAL_LABEL[s.kind]}</b>
+                    <p>{SIGNAL_HINT[s.kind]}</p>
+                    <blockquote className="leg__quote">“{s.evidence}”</blockquote>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="card">
-          <h3><Icon name="globe" size={17} /> 가맹점 해독</h3>
-          <div className="descriptor-row">
+        <section className="sheet">
+          <div className="sheet__h"><Icon name="globe" size={14} /> 가맹점 표기 해독</div>
+          <div className="decode">
             <code>{parsed.descriptor || '표기 없음'}</code>
             <Icon name="arrow" size={14} />
             <div>
@@ -45,13 +48,13 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
               <small>{merchant ? merchant.category : '사전에 없는 가맹점'}</small>
             </div>
           </div>
-          {merchant?.processor && <p className="seller">실제 판매자: <b>{seller || parsed.merchant || '표기에서 확인 필요'}</b></p>}
+          {merchant?.processor && <p>실제 판매자: <b>{seller || parsed.merchant || '표기에서 확인 필요'}</b></p>}
           {merchant ? (
             <>
               <p>{merchant.note}</p>
               {merchant.usageBased && <p className="fine">사용량 기반 과금입니다. 사용 기록은 사업자가 보유하므로 본인 사용량 기준과 시점을 정리해 두는 것이 핵심 증빙입니다.</p>}
               <div className="links">
-                {merchant.links.map(l => <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} <Icon name="external" size={12} /></a>)}
+                {merchant.links.map(l => <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} <Icon name="external" size={11} /></a>)}
               </div>
             </>
           ) : (
@@ -64,27 +67,30 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
         </section>
       </div>
 
-      <section className="card">
-        <h3><Icon name="list" size={17} /> 확인한 사실 <span className="count">{parsed.facts.length}</span></h3>
+      <section className="sheet">
+        <div className="sheet__h"><Icon name="list" size={14} /> 확인한 사실 <span className="count">{parsed.facts.length}</span></div>
         <ol className="facts">
           {parsed.facts.map((f, i) => (
             <li key={i}>
-              <div className="fact-head"><span className="fact-label">{f.label}</span><b>{f.value}</b></div>
-              <blockquote>{f.quote}</blockquote>
+              <span className="k">{f.label}</span>
+              <div>
+                <b>{f.value}</b>
+                <blockquote className="leg__quote">{f.quote}</blockquote>
+              </div>
             </li>
           ))}
         </ol>
         <p className="fine">모든 사실은 입력 원문에서 그대로 인용한 부분만 남겼습니다. 원문에 없는 내용은 자동으로 제외됩니다.</p>
       </section>
 
-      <section className="card">
-        <h3><Icon name="search" size={17} /> 확인할 질문 <span className="count">{report.questions.length}</span></h3>
+      <section className="sheet">
+        <div className="sheet__h"><Icon name="search" size={14} /> 확인할 질문 <span className="count">{report.questions.length}</span></div>
         {report.questions.length === 0 ? <p className="empty">추가 질문이 없습니다. 사실관계를 검토해 주세요.</p> : (
           <ul className="questions">
             {report.questions.map((q, i) => (
               <li key={i}>
                 <div><b>{q.question}</b><p>{q.why}</p></div>
-                <button className="text-button" onClick={() => onAnswer(q.question)}>답변 추가 <Icon name="arrow" size={13} /></button>
+                <button className="textlink" onClick={() => onAnswer(q.question)}>답변 추가 →</button>
               </li>
             ))}
           </ul>

@@ -117,13 +117,13 @@ export function Board({ result, onAnswer }: { result: CaseResult; onAnswer: (que
 
       {activeNode && (
         <aside className="inspector" aria-label="단서 상세">
-          <div className="inspector-head"><span>{activeNode.label}</span><button className="icon-button" onClick={() => setSelected(null)} aria-label="상세 닫기"><Icon name="close" /></button></div>
+          <div className="inspector-head"><span>{activeNode.label}</span><button className="iconbtn" onClick={() => setSelected(null)} aria-label="상세 닫기"><Icon name="close" /></button></div>
           <div className="inspector-body">
             <h2>{activeNode.title}</h2>
             {activeNode.kind === 'fact' ? (
               <><span className="detail-label">입력 자료</span><blockquote>{result.parsed.facts[activeNode.index!].quote}</blockquote><span className="detail-label">연결한 내용</span><p>{activeNode.text}</p><div className="detail-callout">사용자가 제공한 내용입니다. 거래의 실제 상태는 카드 앱이나 원본 자료와 대조하세요.</div></>
             ) : activeNode.kind === 'question' ? (
-              result.report.questions.map((q, i) => <section key={i}><span className="detail-label">질문 0{i + 1}</span><h3>{q.question}</h3><p>{q.why}</p><button className="text-button" onClick={() => { onAnswer(q.question); setSelected(null); }}>답변 추가하기 <Icon name="arrow" size={14} /></button></section>)
+              result.report.questions.map((q, i) => <section key={i}><span className="detail-label">질문 0{i + 1}</span><h3>{q.question}</h3><p>{q.why}</p><button className="textlink" onClick={() => { onAnswer(q.question); setSelected(null); }}>답변 추가하기 <Icon name="arrow" size={14} /></button></section>)
             ) : activeNode.kind === 'source' ? (
               <>{result.rules.map(r => <section key={r.id}><span className="detail-label">{r.publisher}</span><h3>{r.title}</h3><p>{r.body}</p><small>{r.scope}</small><a href={r.url} target="_blank" rel="noopener noreferrer">공식 자료 보기 ↗</a></section>)}<div className="detail-callout">{result.verification.label}<p>{result.verification.note}</p></div></>
             ) : activeNode.kind === 'action' ? (

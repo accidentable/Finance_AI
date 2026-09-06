@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SAMPLES } from '@/lib/samples';
-import { CASE_LABEL, PAYMENT_LABEL, SIGNAL_LABEL, maskText, ParsedSchema, ReportSchema, deadlineFor, type CaseResult } from '@/lib/case';
+import { CASE_LABEL, EMPTY_SLOTS, PAYMENT_LABEL, SIGNAL_LABEL, combineSlots, maskText, ParsedSchema, ReportSchema, deadlineFor, type CaseResult, type Slots } from '@/lib/case';
 import { searchRules, verifySender } from '@/lib/rules';
 import { REASON_CODES, autoChecked, buildPlan, evidenceFor, issuerForm, lookupMerchant, readiness as computeReadiness, referenceDeadline } from '@/lib/playbook';
-import { Icon, Mark } from '@/components/Icon';
+import { Icon } from '@/components/Icon';
 import { Landing } from '@/components/Landing';
 import { Workspace, type Stage } from '@/components/Workspace';
 import { LoadingOverlay, ReviewDialog, Toast } from '@/components/Overlays';
 
-const STORE = 'dispute72-case-v3';
+const STORE = 'dispute72-case-v4';
 
 export default function Page() {
-  const [input, setInput] = useState('');
+  const [slots, setSlots] = useState<Slots>(EMPTY_SLOTS);
   const [history, setHistory] = useState('');
   const [followup, setFollowup] = useState('');
   const [result, setResult] = useState<CaseResult | null>(null);
@@ -44,6 +44,7 @@ export default function Page() {
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(''), 3500); return () => clearTimeout(t); }, [toast]);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [stage, result]);
 
+  const combined = useMemo(() => combineSlots(slots), [slots]);
   const merchant = useMemo(() => result ? lookupMerchant(result.parsed.descriptor, result.parsed.merchant) : null, [result]);
   const plan = useMemo(() => result ? buildPlan(result.parsed, merchant, result.report.actions) : [], [result, merchant]);
   const mapping = result ? REASON_CODES[result.parsed.caseType] : null;
@@ -54,26 +55,26 @@ export default function Page() {
 
   function applyResult(data: CaseResult, text: string, opts: { keepChecks?: boolean; checks?: Record<string, boolean>; txDate?: string } = {}) {
     const auto = Object.fromEntries(Object.entries(autoChecked(data.parsed)).map(([k, v]) => [`ev:${k}`, v]));
+    const noPosting = data.parsed.paymentStatus === 'declined' || data.parsed.paymentStatus === 'invoice_only';
     setResult(data);
     setHistory(text);
     setChecks(prev => ({ ...auto, ...(opts.keepChecks ? prev : {}), ...(opts.checks || {}) }));
-    const noPosting = data.parsed.paymentStatus === 'declined' || data.parsed.paymentStatus === 'invoice_only';
     setTxDate(opts.txDate ?? (noPosting ? '' : data.parsed.transactionDate || ''));
     setFollowup('');
     setError('');
   }
   function reset() {
     abort.current?.abort();
-    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setInput(''); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setStage('diagnose');
+    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setStage('diagnose');
   }
   function openSample(index: number) {
     const s = SAMPLES[index];
     setPrevious(null); setRevision(1); setStage('diagnose');
     applyResult(structuredClone(s.result), s.text);
-    setInput(s.text);
+    setSlots({ ...s.slots });
   }
   function prepare(text: string) {
-    if (text.trim().length < 20) { setError('메일이나 상황을 20자 이상 적어 주세요.'); return; }
+    if (text.trim().length < 20) { setError('카드 문자나 상황 설명을 합쳐 20자 이상 적어 주세요.'); return; }
     if (text.length > 20000) { setError('한 사건의 내용은 20,000자 이내로 나누어 주세요.'); return; }
     setError('');
     setReview(maskText(text));
@@ -121,7 +122,7 @@ export default function Page() {
   }
   function save() {
     try {
-      localStorage.setItem(STORE, JSON.stringify({ result, history, revision, checks, txDate, expires: Date.now() + 7 * 86400000 }));
+      localStorage.setItem(STORE, JSON.stringify({ result, history, slots, revision, checks, txDate, expires: Date.now() + 7 * 86400000 }));
       setSaved(true);
       setToast('이 브라우저에 7일간 저장했어요. 체크 상태도 함께 저장됩니다.');
     } catch { setToast('브라우저 저장 공간을 사용할 수 없습니다.'); }
@@ -135,6 +136,7 @@ export default function Page() {
       const restored: CaseResult = { parsed, report, rules: searchRules(parsed.caseType), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: data.result.mode === 'demo' ? 'demo' : 'live' };
       setPrevious(null); setRevision(Number(data.revision) || 1); setStage('diagnose');
       applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined });
+      if (data.slots && typeof data.slots === 'object') setSlots({ ...EMPTY_SLOTS, ...data.slots });
     } catch { localStorage.removeItem(STORE); setSaved(false); setToast('저장된 사건이 만료되었거나 열 수 없습니다.'); }
   }
   async function copy(text: string, label: string) {
@@ -173,8 +175,8 @@ export default function Page() {
   async function upload(file: File) {
     if (file.size > 80000) { setError('80KB 이하 텍스트 파일을 추가해 주세요.'); return; }
     const t = await file.text();
-    if (input.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘습니다.'); return; }
-    setInput(v => v + (v ? '\n\n' : '') + t);
+    if (combined.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘습니다.'); return; }
+    setSlots(s => ({ ...s, mail: s.mail + (s.mail ? '\n\n' : '') + t }));
   }
   function toggle(id: string) { setChecks(c => ({ ...c, [id]: !c[id] })); }
   function answer(question: string) {
@@ -184,23 +186,26 @@ export default function Page() {
 
   return (
     <>
-      <header className="topbar">
-        <button className="brand" onClick={reset} aria-label="분쟁72 홈"><Mark /><strong>분쟁<span>72</span></strong></button>
-        {result ? (
-          <>
-            <div className="breadcrumb"><span>내 사건</span><Icon name="chevron" size={13} /><b>{result.parsed.merchant || '새로운 사건'}</b><span className="version">v{revision}</span></div>
-            <div className="header-actions">
-              <span className={`mode ${result.mode}`}>{result.mode === 'demo' ? '합성 예시' : 'OpenAI 분석'}</span>
-              <button className="quiet" onClick={save}><Icon name="download" size={15} /> 저장</button>
-              {saved && <button className="quiet" onClick={() => { localStorage.removeItem(STORE); setSaved(false); setToast('이 브라우저에 저장한 사건을 삭제했어요.'); }}>저장본 삭제</button>}
-              <button className="outline" onClick={exportMarkdown}>내보내기 <Icon name="arrow" size={14} /></button>
-            </div>
-          </>
-        ) : <span className="header-caption">해외 AI·클라우드 결제 이상청구 대응 비서</span>}
+      <header className="masthead">
+        <div className="masthead__in">
+          <button className="brand" onClick={reset} aria-label="분쟁72 홈"><span className="brand__mark">분쟁<span>72</span></span><span className="brand__service">해외결제 이상청구 대응</span></button>
+          <div className="masthead__status">
+            {result ? (
+              <>
+                <span className="masthead__confirmed"><i className={`masthead__dot ${result.mode}`} />{result.mode === 'demo' ? '합성 예시' : '분석 완료'}<span className="long"> — {result.parsed.merchant || '사건'} · v{revision}</span></span>
+                <div className="masthead__actions">
+                  <button className="ghostbtn small" onClick={save}><Icon name="download" size={13} /> 저장</button>
+                  {saved && <button className="ghostbtn small" onClick={() => { localStorage.removeItem(STORE); setSaved(false); setToast('이 브라우저에 저장한 사건을 삭제했어요.'); }}>저장본 삭제</button>}
+                  <button className="ghostbtn small" onClick={exportMarkdown}>내보내기 →</button>
+                </div>
+              </>
+            ) : <span className="masthead__confirmed"><i className="masthead__dot" />접수 대기 · 첫 72시간</span>}
+          </div>
+        </div>
       </header>
 
       {!result ? (
-        <Landing input={input} setInput={setInput} onSubmit={prepare} onSample={openSample} onUpload={upload} saved={saved} onRestore={restore} error={error} busy={busy} />
+        <Landing slots={slots} setSlot={(k, v) => setSlots(s => ({ ...s, [k]: v }))} onSubmit={() => prepare(combined)} onSample={openSample} onUpload={upload} saved={saved} onRestore={restore} error={error} busy={busy} canSubmit={combined.trim().length >= 20} />
       ) : (
         <Workspace
           result={result} revision={revision} previous={previous} onDismissPrevious={() => setPrevious(null)}

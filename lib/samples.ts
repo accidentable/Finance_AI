@@ -1,12 +1,12 @@
-import { deadlineFor, type CaseResult, type Parsed, type Report } from './case';
+import { combineSlots, deadlineFor, type CaseResult, type Parsed, type Report, type Slots } from './case';
 import { searchRules, verifySender } from './rules';
 
-export type Sample = { id: string; label: string; caption: string; text: string; result: CaseResult };
+export type Sample = { id: string; label: string; caption: string; slots: Slots; text: string; result: CaseResult };
 
-function sample(id: string, label: string, caption: string, parsed: Parsed, report: Report): Sample {
+function sample(id: string, label: string, caption: string, slots: Slots, parsed: Parsed, report: Report): Sample {
   return {
-    id, label, caption,
-    text: parsed.facts.map(f => f.quote).join('\n\n'),
+    id, label, caption, slots,
+    text: combineSlots(slots),
     result: { parsed, report, rules: searchRules(parsed.caseType), verification: verifySender(parsed.senderDomain), deadline: deadlineFor(parsed.paymentStatus), mode: 'demo' },
   };
 }
@@ -17,17 +17,32 @@ const routes: Report['routes'] = [
   { name: 'kca', title: '소비자상담 검토', note: '개인·사업용 계약 여부와 국제거래 상담 대상을 먼저 확인하세요.', missing: ['계약 주체 확인'] },
 ];
 
+const SUB_FACTS = [
+  { label: '해지 요청', value: '8월 20일 · 해지 요청 완료', quote: '2026년 8월 20일 AlphaWrite 계정에서 구독 해지를 요청했습니다. 해지 요청 화면을 보관했습니다.' },
+  { label: '카드 거래', value: '9월 1일 · 29달러 매입', quote: '카드 앱 매입 내역에 2026년 9월 1일 ALPHAWRITE USD 29.00이 있습니다.' },
+  { label: '사업자 문의', value: '9월 2일 · 답변 대기', quote: '2026년 9월 2일 고객센터에 문의했습니다. 아직 답변이 없습니다. 개인용 월간 구독입니다.' },
+];
+const DUP_FACTS = [
+  { label: '주문 내역', value: '주문 한 건 · 49달러', quote: '2026년 9월 3일 BetaDesign에서 49달러 상품을 한 번 주문했습니다.' },
+  { label: '결제 알림', value: '같은 금액의 알림 2건', quote: '카드 승인 문자에 BETADESIGN USD 49.00이 두 번 표시됩니다. 매입 내역은 아직 확인하지 않았습니다.' },
+];
+const KEY_FACTS = [
+  { label: '청구서', value: '12,000달러 · 평소 월 40달러', quote: '2026년 9월 4일 GammaAI에서 12,000달러 API 사용량 청구서를 받았습니다. 지난달까지는 월 40달러 정도였고 이번 달은 제가 쓰지 않은 사용량입니다.' },
+  { label: '카드 알림', value: '승인 거절 반복 · 매입 없음', quote: '카드 앱에 9월 4일과 5일 STRIPE *GAMMAAI USD 12,000.00 승인 거절이 표시됩니다. 매입 내역은 확인하지 못했습니다.' },
+  { label: '키 조치', value: '9월 5일 · 키 삭제 후 재발급', quote: '2026년 9월 5일 GammaAI 콘솔에서 API 키를 삭제하고 새로 발급했습니다. 사용량 대시보드에는 9월 2일부터 해외 IP 요청이 급증한 기록이 있습니다.' },
+];
+
 export const SAMPLES: Sample[] = [
   sample('subscription', '해지했는데 또 결제됐어요', 'AI 글쓰기 구독 · USD 29 매입', {
+    sms: '[Web발신] 해외승인 ALPHAWRITE USD 29.00 09/01 10:12 일시불',
+    mail: '',
+    note: SUB_FACTS.map(f => f.quote).join('\n'),
+  }, {
     title: '해지 후에도 이어진 구독 결제',
     summary: 'AlphaWrite 구독 해지를 요청한 뒤 29달러가 매입됐습니다. 해지 효력일과 이번 청구의 대상 기간을 연결해 확인해야 합니다.',
     merchant: 'AlphaWrite', descriptor: 'ALPHAWRITE', caseType: 'cancelled_recurring', paymentStatus: 'posted', amount: 'USD 29.00', transactionDate: '2026-09-01', senderDomain: null,
     signals: [{ kind: 'post_cancel', evidence: '구독 해지를 요청했습니다' }],
-    facts: [
-      { label: '해지 요청', value: '8월 20일 · 해지 요청 완료', quote: '2026년 8월 20일 AlphaWrite 계정에서 구독 해지를 요청했습니다. 해지 요청 화면을 보관했습니다.' },
-      { label: '카드 거래', value: '9월 1일 · 29달러 매입', quote: '카드 앱 매입 내역에 2026년 9월 1일 ALPHAWRITE USD 29.00이 있습니다.' },
-      { label: '사업자 문의', value: '9월 2일 · 답변 대기', quote: '2026년 9월 2일 고객센터에 문의했습니다. 아직 답변이 없습니다. 개인용 월간 구독입니다.' },
-    ],
+    facts: SUB_FACTS,
   }, {
     headline: '해지 효력일이 마지막 연결 고리예요',
     explanation: '요청 기록과 실제 매입은 확인했습니다. 구독이 언제 종료되는지 확인하면, 이번 청구와의 관계를 더 명확하게 설명할 수 있습니다.',
@@ -46,14 +61,15 @@ export const SAMPLES: Sample[] = [
   }),
 
   sample('duplicate', '같은 금액이 두 번 찍혔어요', '디자인 도구 주문 · USD 49 승인 2건', {
+    sms: '[Web발신] 해외승인 BETADESIGN USD 49.00 09/03 21:40 일시불\n[Web발신] 해외승인 BETADESIGN USD 49.00 09/03 21:41 일시불',
+    mail: '',
+    note: DUP_FACTS.map(f => f.quote).join('\n'),
+  }, {
     title: '두 건으로 보이는 결제 내역',
     summary: 'BetaDesign 주문은 한 건인데 49달러 승인 알림이 두 번 도착했습니다. 승인 알림 중복인지 실제 매입 두 건인지 아직 확인되지 않았습니다.',
     merchant: 'BetaDesign', descriptor: 'BETADESIGN', caseType: 'duplicate', paymentStatus: 'approved', amount: 'USD 49.00 × 2?', transactionDate: '2026-09-03', senderDomain: null,
     signals: [{ kind: 'duplicate', evidence: 'BETADESIGN USD 49.00이 두 번 표시됩니다' }],
-    facts: [
-      { label: '주문 내역', value: '주문 한 건 · 49달러', quote: '2026년 9월 3일 BetaDesign에서 49달러 상품을 한 번 주문했습니다.' },
-      { label: '결제 알림', value: '같은 금액의 알림 2건', quote: '카드 승인 문자에 BETADESIGN USD 49.00이 두 번 표시됩니다. 매입 내역은 아직 확인하지 않았습니다.' },
-    ],
+    facts: DUP_FACTS,
   }, {
     headline: '두 알림이 두 결제인지는 아직 몰라요',
     explanation: '실제 매입 내역을 확인한 뒤 중복 청구 여부를 검토합니다. 승인만 두 번 잡힌 경우 며칠 안에 하나가 자동 해제될 수 있습니다.',
@@ -71,19 +87,19 @@ export const SAMPLES: Sample[] = [
   }),
 
   sample('apikey', 'API 키가 유출된 것 같아요', 'AI API 사용량 · USD 12,000 청구서', {
+    sms: '[Web발신] 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02\n[Web발신] 해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/05 09:15',
+    mail: 'From: billing@gammaai.example\nSubject: Your GammaAI invoice for usage Aug 25 – Sep 3\n\nInvoice total: USD 12,000.00\nPayment method: card on file — payment failed, we will retry automatically.',
+    note: KEY_FACTS.map(f => f.quote).join('\n'),
+  }, {
     title: '키 유출 의심 고액 사용량 청구',
     summary: 'GammaAI에서 평소의 300배인 12,000달러 API 사용량 청구서를 받았습니다. 본인이 쓰지 않은 사용량이며, 키는 삭제했고 카드 승인은 거절되고 있습니다. 매입은 아직 없습니다.',
-    merchant: 'GammaAI', descriptor: 'STRIPE *GAMMAAI', caseType: 'credential_theft', paymentStatus: 'declined', amount: 'USD 12,000.00', transactionDate: '2026-09-04', senderDomain: null,
+    merchant: 'GammaAI', descriptor: 'STRIPE *GAMMAAI', caseType: 'credential_theft', paymentStatus: 'declined', amount: 'USD 12,000.00', transactionDate: '2026-09-04', senderDomain: 'gammaai.example',
     signals: [
       { kind: 'spike', evidence: '지난달까지는 월 40달러 정도였고' },
       { kind: 'unauthorized_usage', evidence: '제가 쓰지 않은 사용량입니다' },
       { kind: 'retry_declined', evidence: '9월 4일과 5일 STRIPE *GAMMAAI USD 12,000.00 승인 거절' },
     ],
-    facts: [
-      { label: '청구서', value: '12,000달러 · 평소 월 40달러', quote: '2026년 9월 4일 GammaAI에서 12,000달러 API 사용량 청구서를 받았습니다. 지난달까지는 월 40달러 정도였고 이번 달은 제가 쓰지 않은 사용량입니다.' },
-      { label: '카드 알림', value: '승인 거절 반복 · 매입 없음', quote: '카드 앱에 9월 4일과 5일 STRIPE *GAMMAAI USD 12,000.00 승인 거절이 표시됩니다. 매입 내역은 확인하지 못했습니다.' },
-      { label: '키 조치', value: '9월 5일 · 키 삭제 후 재발급', quote: '2026년 9월 5일 GammaAI 콘솔에서 API 키를 삭제하고 새로 발급했습니다. 사용량 대시보드에는 9월 2일부터 해외 IP 요청이 급증한 기록이 있습니다.' },
-    ],
+    facts: KEY_FACTS,
   }, {
     headline: '지혈은 끝났고, 이제 가맹점 검토를 여는 단계예요',
     explanation: '키 삭제와 승인 거절로 추가 출금은 막혀 있습니다. 매입이 없으므로 카드사 이의신청 대상은 아직 없고, 가맹점의 미승인 사용 검토가 환불의 실제 경로입니다. 카드 도용이 아니므로 카드 도용 사유코드는 맞지 않습니다.',

@@ -82,6 +82,18 @@ export const SIGNAL_HINT: Record<SignalKind, string> = {
   sender_mismatch: '청구 메일의 발신 주소가 공식 도메인과 다르면 직접 접속해 확인합니다.',
 };
 
+// 첫 화면 입력 슬롯. 서버로는 헤더를 붙여 하나의 문자열로 합쳐 보낸다.
+export type Slots = { sms: string; mail: string; note: string };
+export const EMPTY_SLOTS: Slots = { sms: '', mail: '', note: '' };
+export const SLOT_META: { key: keyof Slots; label: string; hint: string; placeholder: string }[] = [
+  { key: 'sms', label: '카드 알림 문자 · 거래내역', hint: '가장 중요', placeholder: '[Web발신] 해외승인 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02 승인거절' },
+  { key: 'mail', label: '청구 메일 · 청구서', hint: '선택', placeholder: '발신 주소와 본문을 그대로 붙여넣으면 발신 도메인도 확인합니다' },
+  { key: 'note', label: '내 상황 설명', hint: '한 줄이어도 좋아요', placeholder: '지난달까지 월 40달러였는데 이번 달 12,000달러가 청구됐어요. 키는 삭제했습니다.' },
+];
+export function combineSlots(slots: Slots): string {
+  return SLOT_META.map(m => { const v = slots[m.key].trim(); return v ? `[${m.label}]\n${v}` : ''; }).filter(Boolean).join('\n\n');
+}
+
 export function maskText(text: string) {
   return text
     .replace(/\b(?:sk|AIza)[-_a-zA-Z0-9]{15,}\b/g, '[API 키 숨김]')

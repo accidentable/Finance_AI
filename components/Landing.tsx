@@ -2,75 +2,97 @@
 
 import { useRef } from 'react';
 import { SAMPLES } from '@/lib/samples';
+import { SLOT_META, type Slots } from '@/lib/case';
 import { Icon } from './Icon';
 
 type Props = {
-  input: string;
-  setInput: (v: string) => void;
-  onSubmit: (text: string) => void;
+  slots: Slots;
+  setSlot: (key: keyof Slots, value: string) => void;
+  onSubmit: () => void;
   onSample: (index: number) => void;
   onUpload: (file: File) => void;
   saved: boolean;
   onRestore: () => void;
   error: string;
   busy: boolean;
+  canSubmit: boolean;
 };
 
-const STEPS = [
-  { n: '01', title: '탐지·진단', text: '이상 신호를 찾고 가맹점 표기를 해독합니다' },
-  { n: '02', title: '72시간 계획', text: '지혈, 가맹점 환불, 카드사 준비 순서로 안내합니다' },
-  { n: '03', title: '이의신청 패키지', text: '사유코드 후보와 증빙 체크리스트, 초안을 만듭니다' },
-];
+const SLOT_ICON: Record<keyof Slots, 'card' | 'mail' | 'file'> = { sms: 'card', mail: 'mail', note: 'file' };
 
-export function Landing({ input, setInput, onSubmit, onSample, onUpload, saved, onRestore, error, busy }: Props) {
+function today() {
+  const d = new Date();
+  return `${String(d.getMonth() + 1).padStart(2, '0')}·${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, saved, onRestore, error, busy, canSubmit }: Props) {
   const upload = useRef<HTMLInputElement>(null);
   return (
-    <main className="landing">
-      <div className="entry">
-        <div className="entry-caption"><span className="tiny-dot" /> 해외 AI·클라우드·구독 결제가 이상할 때, 첫 72시간</div>
-        <h1>어떤 결제 문제가 있었나요?</h1>
-        <form className="composer" onSubmit={e => { e.preventDefault(); onSubmit(input); }}>
-          <textarea
-            aria-label="사건 내용"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            maxLength={20000}
-            placeholder={'카드 알림 문자, 청구 메일, 거래내역을 붙여넣어 주세요.\n지금 겪고 있는 일을 편하게 적어도 좋아요.'}
-            onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); onSubmit(input); } }}
-          />
-          <div className="composer-bottom">
-            <div className="composer-tools">
-              <button type="button" className="icon-button" onClick={() => upload.current?.click()} aria-label="텍스트 파일 추가" title="텍스트 파일 추가 (.txt)"><Icon name="plus" /></button>
-              <span className="tool-divider" />
-              <span className="composer-hint"><Icon name="shield" size={13} /> 보내기 전에 마스킹 결과를 확인합니다</span>
-            </div>
-            <button className="send" disabled={busy || input.trim().length < 20} aria-label="사건 분석 시작"><Icon name="arrow" size={20} /></button>
+    <div className="page page--narrow">
+      <section className="ticket is-ready" aria-label="사건 접수">
+        <div className="ticket__main">
+          <div className="nameplate">
+            <p className="nameplate__class">접수 · 첫 72시간</p>
+            <h1 className="nameplate__line">어떤 결제 문제가<br />있었나요?</h1>
+            <p className="nameplate__sub">해외 AI·클라우드·구독 결제의 이상 청구 대응 · 있는 자료만 채워도 됩니다</p>
           </div>
-        </form>
-        <div className="entry-foot"><span>20자 이상 · 최대 20,000자</span><span>Ctrl + Enter</span></div>
-        {error && <p className="error" role="alert">{error}</p>}
-        {saved && <button className="resume" onClick={onRestore}><Icon name="clock" size={14} /> 저장한 사건 이어보기 <Icon name="arrow" size={14} /></button>}
+          <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수 창구</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
 
-        <section className="samples" aria-label="예시 사건">
-          <div className="samples-head"><span className="eyebrow">예시 사건으로 둘러보기</span><small>합성 사례 · API 호출 없음</small></div>
-          <div className="sample-grid">
+          <form className="slots" onSubmit={e => { e.preventDefault(); onSubmit(); }}>
+            {SLOT_META.map((m, i) => (
+              <label key={m.key} className={`slot ${i === 0 ? 'slot--primary' : ''}`}>
+                <span className="slot__h"><Icon name={SLOT_ICON[m.key]} size={14} />{m.label}<span className="right">{m.hint}</span></span>
+                <textarea
+                  value={slots[m.key]}
+                  onChange={e => setSlot(m.key, e.target.value)}
+                  placeholder={m.placeholder}
+                  maxLength={12000}
+                  rows={i === 0 ? 4 : 2}
+                  onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
+                />
+              </label>
+            ))}
+            <div className="entry__actions">
+              <span className="entry__note"><Icon name="shield" size={14} /> 보내기 전에 마스킹 결과를 확인합니다</span>
+              <div className="entry__tools">
+                <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()}><Icon name="plus" size={14} /> .txt 추가</button>
+                <button type="submit" className="inkbtn" disabled={busy || !canSubmit}>분석 시작 <span className="hint">Ctrl + Enter</span></button>
+              </div>
+            </div>
+          </form>
+          {error && <p className="error" role="alert">{error}</p>}
+        </div>
+
+        <div className="perforation" aria-hidden="true"><span className="perforation__rule">예시 사건 · 키 없이 열람</span></div>
+
+        <div className="stub is-ready">
+          <p className="stub__keep">합성 사례 · API 호출 없음</p>
+          <div className="samples">
             {SAMPLES.map((s, i) => (
-              <button type="button" key={s.id} className="sample-card" onClick={() => onSample(i)}>
-                <span className="sample-index">0{i + 1}</span>
+              <button type="button" key={s.id} className="sample" onClick={() => onSample(i)}>
+                <span className="sample__code">Case · 0{i + 1}</span>
                 <b>{s.label}</b>
                 <small>{s.caption}</small>
-                <span className="sample-go">열어보기 <Icon name="arrow" size={13} /></span>
+                <span className="textlink">열어보기 →</span>
               </button>
             ))}
           </div>
-        </section>
+          {saved && <button className="ghostbtn resume" onClick={onRestore}><Icon name="clock" size={14} /> 저장한 사건 이어보기</button>}
+        </div>
+      </section>
 
-        <ol className="value-strip">
-          {STEPS.map(s => <li key={s.n}><span>{s.n}</span><div><b>{s.title}</b><p>{s.text}</p></div></li>)}
-        </ol>
-      </div>
-      <p className="landing-footer">진단과 서류 준비까지 돕습니다. 발송과 접수는 직접 결정하세요.</p>
+      <section className="conditions">
+        <h2 className="conditions__h">이용 안내</h2>
+        <p>카드 알림 문자가 가장 중요한 자료입니다. 거래일, 금액, 가맹점 표기가 거기서 나옵니다. 청구 메일은 발신 주소까지 함께 붙여넣으면 도메인을 대조합니다. 번호·이메일·API 키 형태는 전송 전에 자동으로 가립니다.</p>
+        <p>이 서비스는 진단과 서류 준비까지 돕습니다. 발송과 카드사 접수는 직접 결정하세요. 결과는 검토용이며 환불 권리나 신청 기한을 확정하지 않습니다.</p>
+      </section>
+
+      <footer className="colophon">
+        <p className="colophon__mark">분쟁72</p>
+        <p className="colophon__fine">해외결제 이상청구 대응 비서 · 2026 금융 AI Challenge</p>
+      </footer>
+
       <input type="file" accept=".txt,text/plain" hidden ref={upload} onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ''; }} />
-    </main>
+    </div>
   );
 }
