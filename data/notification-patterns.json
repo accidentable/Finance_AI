@@ -1,0 +1,43 @@
+{
+  "accessed": "2026-09-06",
+  "note": "카드 승인 알림 문자를 규칙으로 파싱하기 위한 패턴. 카드사별 정확한 양식은 공식 페이지에서 확인하지 못했으므로 공통 요소(승인 유형, 통화·금액, 일시, 가맹점 표기)만 패턴화했다. verified는 pattern-only다. 실제 문자 샘플을 확보하면 issuerFormats를 채운다.",
+  "verified": "pattern-only",
+  "issuers": ["신한카드", "삼성카드", "현대카드", "KB국민카드", "롯데카드", "하나카드", "우리카드", "BC카드", "NH농협카드"],
+  "patterns": {
+    "header": "\\[(Web|웹)발신\\]",
+    "suspiciousHeader": "\\[(국외|국제)발신\\]",
+    "issuer": "(신한|삼성|현대|KB국민|국민|롯데|하나|우리|BC|비씨|NH농협|농협)카드",
+    "type": "(해외승인취소|해외취소|해외승인거절|승인거절|해외승인|해외 일시불|해외이용|해외결제)",
+    "foreignAmount": "\\b(USD|EUR|JPY|GBP|CAD|AUD|SGD|HKD|CNY|CHF|TWD)\\s?([0-9]{1,3}(?:,[0-9]{3})*(?:\\.[0-9]{1,2})?|[0-9]+(?:\\.[0-9]{1,2})?)",
+    "krwAmount": "([0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)원",
+    "dateTime": "(\\d{1,2})\\/(\\d{1,2})\\s+(\\d{1,2}):(\\d{2})",
+    "installment": "(일시불|할부|\\d+개월)",
+    "descriptorLine": "^[A-Z0-9][A-Z0-9 .*\\-/&']{2,}$",
+    "cumulative": "누적\\s*([0-9,]+)원"
+  },
+  "typeMap": {
+    "해외승인": "approved",
+    "해외 일시불": "approved",
+    "해외이용": "approved",
+    "해외결제": "approved",
+    "해외승인거절": "declined",
+    "승인거절": "declined",
+    "해외승인취소": "cancelled",
+    "해외취소": "cancelled"
+  },
+  "issuerFormats": [],
+  "examples": [
+    { "text": "[Web발신]\n해외승인 ALPHAWRITE USD 29.00 09/01 10:12 일시불", "expected": { "type": "approved", "currency": "USD", "amount": "29.00", "date": "09/01", "time": "10:12", "descriptor": "ALPHAWRITE" } },
+    { "text": "[Web발신]\n해외승인거절 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02", "expected": { "type": "declined", "currency": "USD", "amount": "12,000.00", "date": "09/04", "time": "14:02", "descriptor": "STRIPE *GAMMAAI" } }
+  ],
+  "cautions": [
+    "[국외발신]·[국제발신]으로 시작하고 링크나 전화번호 회신을 요구하는 '해외결제 완료' 문자는 스미싱인 경우가 많다. 카드사 대표번호로 직접 확인한다.",
+    "승인 문자는 매입 전 단계다. 3~4일 뒤 매입 내역으로 실제 청구를 확인한다.",
+    "해외 원화결제(DCC)는 원화 금액이 찍히며 3~8% 수수료가 붙을 수 있다."
+  ],
+  "sources": [
+    { "title": "한국경제: 해외 결제 문자에 가슴 철렁 (스미싱 사례)", "url": "https://www.hankyung.com/article/202302109070g", "accessed": "2026-09-06", "kind": "news" },
+    { "title": "소비자24 상담사례: 사용한 사실이 없는 해외 사용 승인 문자", "url": "https://www.consumer.go.kr/user/ftc/consumer/cnsltcase/114/selectCnsltCaseView.do?prgnCnsltCaseSn=55614", "accessed": "2026-09-06", "kind": "official" },
+    { "title": "KB국민카드 해외이용 FAQ (DCC·매입)", "url": "https://m.kbcard.com/CXHIASVCD0032.cms", "accessed": "2026-09-06", "kind": "official" }
+  ]
+}

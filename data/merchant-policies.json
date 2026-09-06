@@ -1,0 +1,327 @@
+{
+  "accessed": "2026-09-06",
+  "note": "해외 AI·클라우드·SaaS 사업자의 환불·해지·미승인 청구 정책 요약. 정책은 자주 바뀌므로 accessed 날짜와 출처를 함께 보여준다. verified가 secondary인 항목은 공식 페이지 접근이 막혀(403) 검색 요약이나 2차 자료로 확인한 것이다.",
+  "merchants": [
+    {
+      "id": "openai", "name": "OpenAI (ChatGPT · API)", "category": "AI 구독 · API 사용량", "usageBased": true,
+      "descriptors": ["OPENAI", "CHATGPT", "OPENAI *CHATGPT SUBSCR"],
+      "refund": "원칙적으로 구독 결제는 환불 불가. EU·영국·터키 거주자는 구매 후 14일 이내 취소 시 비례 환불. 한국 거주자의 7일 청약철회 권리를 별도로 언급. 실수 구매는 청구 후 14일 이내 문의 시 환불 검토. 청구 오류·미승인 청구는 검토 후 환불.",
+      "cancellation": "취소해도 현재 결제 주기 종료까지 유료 기능 유지. 다음 주기부터 청구 중단.",
+      "unauthorized": "미승인 청구는 청구 내역(billing 페이지)에서 구독·API 크레딧 구매인지 먼저 확인한 뒤 도움말 센터 채팅으로 검토 요청. API 키 유출이면 키를 삭제(비활성화 아님)한 뒤 요청.",
+      "processingTime": "환불 승인 시 5~7영업일",
+      "channels": [
+        { "label": "환불 요청 안내", "url": "https://help.openai.com/en/articles/7232895-how-do-i-request-a-refund-for-my-chatgpt-subscription" },
+        { "label": "미승인 청구 검토 요청", "url": "https://help.openai.com/en/articles/7242625-unauthorized-chatgpt-or-api-credit-purchase-charges-how-to-request-a-refund" },
+        { "label": "청구·환불 도움말 모음", "url": "https://help.openai.com/en/collections/3943089-billing" },
+        { "label": "API 결제 설정", "url": "https://platform.openai.com/settings/organization/billing/overview" }
+      ],
+      "notes": ["앱스토어 결제는 Apple·Google에 요청", "구독(ChatGPT)과 API 크레딧은 별도 계정 항목"],
+      "verified": "secondary",
+      "sources": [
+        { "title": "OpenAI Help: How do I request a refund", "url": "https://help.openai.com/en/articles/7232895-how-do-i-request-a-refund-for-my-chatgpt-subscription", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "OpenAI Help: Unauthorized charges", "url": "https://help.openai.com/en/articles/7242625-unauthorized-chatgpt-or-api-credit-purchase-charges-how-to-request-a-refund", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "anthropic", "name": "Anthropic (Claude)", "category": "AI 구독 · API 사용량", "usageBased": true,
+      "descriptors": ["ANTHROPIC", "CLAUDE", "CLAUDE.AI"],
+      "refund": "소비자 약관에 명시된 경우나 법이 요구하는 경우를 제외하고 모든 결제는 환불 불가. EEA·영국 거주자는 14일 청약철회. Team 플랜으로 업그레이드하면 개인 구독 미사용분은 자동 비례 환불.",
+      "cancellation": "설정 → Billing에서 언제든 취소. 갱신일 24시간 전 취소를 권장하며, 갱신 후 취소해도 그 주기 요금은 환불되지 않음.",
+      "unauthorized": "계정 화면 좌하단 이니셜 → Get help → Send us a message → 'Claude Refund Request' 선택. 앱스토어·Google Play 결제는 해당 스토어 절차. 비활성 구독 환불은 계정 이메일 또는 GPA 주문번호를 지원팀에 제출.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "환불 요청 안내", "url": "https://support.claude.com/en/articles/12386328-request-a-refund-for-a-paid-claude-plan" },
+        { "label": "구독 취소 안내", "url": "https://support.claude.com/en/articles/8325617-how-do-i-cancel-my-paid-claude-subscription" },
+        { "label": "콘솔 결제 설정", "url": "https://console.anthropic.com/settings/billing" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "Claude Help Center: Request a refund for a paid Claude plan", "url": "https://support.claude.com/en/articles/12386328-request-a-refund-for-a-paid-claude-plan", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "google-cloud", "name": "Google Cloud (AI Studio · Maps · Firebase 포함)", "category": "클라우드 · API 사용량", "usageBased": true,
+      "descriptors": ["GOOGLE *CLOUD", "GOOGLE CLOUD", "GOOGLE*CLOUD"],
+      "refund": "Postpay 계정의 미사용 잔액은 환불 가능하나 프로모션 크레딧, 미결제 잔액, Prepay 크레딧은 제외. 사용된 요금의 환불은 지원팀 검토.",
+      "cancellation": "프로젝트·리소스 삭제와 결제 계정 해지가 분리돼 있음. 리소스가 남아 있으면 계속 과금.",
+      "unauthorized": "인식하지 못한 청구나 예상 밖 송장은 Cloud Billing Support에 문의(무료). 계정 없이 청구된 경우 Unknown Google Cloud Charge Inquiry 양식 제출. 은행에 분쟁을 걸면 Google이 검토 후 은행에 결정을 통보. 자격증명 유출 시 인식 못 하는 리소스를 삭제하고 Customer Care에 즉시 연락해 청구 조정 논의.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "결제 문제 해결 문서", "url": "https://docs.cloud.google.com/billing/docs/how-to/resolve-issues" },
+        { "label": "Cloud Billing 지원", "url": "https://cloud.google.com/support/billing" },
+        { "label": "예산·알림 설정", "url": "https://cloud.google.com/billing/docs/how-to/budgets" }
+      ],
+      "notes": ["예산 알림은 사용량을 차단하지 않음", "미결제 잔액이 있으면 새 프로젝트 생성 등 제한"],
+      "verified": "official",
+      "sources": [
+        { "title": "Google Cloud: Resolve Cloud Billing issues", "url": "https://docs.cloud.google.com/billing/docs/how-to/resolve-issues", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "google-play", "name": "Google Play · Google One (앱 구독)", "category": "앱 구독", "usageBased": false,
+      "descriptors": ["GOOGLE *", "GOOGLE PLAY", "GOOGLE ONE", "GOOGLE *GEMINI"],
+      "refund": "앱·인앱 구매는 구매 후 48시간 이내 Google Play에서 환불 요청 가능. 48시간 이후는 개발자에게 직접 요청. Google One은 구매한 스토어의 정책 적용.",
+      "cancellation": "Google Play 구독 관리에서 취소. 취소해도 이미 청구된 주기는 유지.",
+      "unauthorized": "Google Play '문제 신고'로 미승인 구매 신고. Play를 통해 결제한 AI 앱(Gemini, ChatGPT 등)은 사업자가 아니라 Google Play에 요청.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "Google Play 환불 정책", "url": "https://support.google.com/googleplay/answer/2479637" },
+        { "label": "Google Play 환불 요청", "url": "https://support.google.com/googleplay/answer/15574897" },
+        { "label": "Google One 구매·취소·환불 정책", "url": "https://support.google.com/googleone/answer/2736362" }
+      ],
+      "notes": [],
+      "verified": "secondary",
+      "sources": [
+        { "title": "Google Play Help: refund policies", "url": "https://support.google.com/googleplay/answer/15574908", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "aws", "name": "Amazon Web Services", "category": "클라우드 사용량", "usageBased": true,
+      "descriptors": ["AMZN WEB SERVICES", "AMAZON WEB SERVICES", "AWS EMEA", "AWS"],
+      "refund": "사용한 서비스 요금은 원칙적으로 환불하지 않음. 지원팀이 검토 후 1회성 courtesy credit을 줄 수 있으나 보장은 없음.",
+      "cancellation": "계정 해지 전 모든 리전의 리소스를 종료해야 과금이 멈춤.",
+      "unauthorized": "AWS Support Center에서 'Account and Billing' 유형 케이스 개설(무료). 몰랐던 청구임을 설명하고 금액·기간·조치(리소스 종료, 키 교체)를 적음. 재발 방지로 AWS Budgets·CloudWatch 청구 알림 설정.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "Support 케이스 열기", "url": "https://console.aws.amazon.com/support/home" },
+        { "label": "청구 사용자 가이드", "url": "https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/" },
+        { "label": "비용 이상 탐지 설정", "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html" }
+      ],
+      "notes": ["Marketplace 상품은 별도 환불 규정"],
+      "verified": "secondary",
+      "sources": [
+        { "title": "AWS re:Post: Refund inquiry for unauthorized AWS charges", "url": "https://repost.aws/questions/QUAKGVway1RiaYS18eAT5Qbg/refund-inquiry-for-unauthorized-aws-charges", "accessed": "2026-09-06", "kind": "community" },
+        { "title": "AWS Marketplace refunds", "url": "https://docs.aws.amazon.com/marketplace/latest/buyerguide/buyer-refunds.html", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "azure", "name": "Microsoft Azure · Microsoft 365", "category": "클라우드 · 구독", "usageBased": true,
+      "descriptors": ["MSFT", "MICROSOFT", "AZURE", "MSFT *AZURE"],
+      "refund": "Azure: 구독 취소 시 과금 즉시 중단(최대 72시간 내 마감 청구). 이미 발생한 사용량은 자동 환불되지 않으며 지원 플랜은 월 잔여분 비례 환불 없음. Microsoft 365: 초기 구매 또는 첫 자동 갱신 청구 후 30일 이내 취소 시 환불, 계정당 상품별 1회. 한국은 Copilot Pro·365 Premium은 구매 후 14일 이내 취소 시 비례 환불.",
+      "cancellation": "Azure Portal 구독 → 취소. Microsoft 계정 Services & subscriptions → Manage → Cancel.",
+      "unauthorized": "Azure Portal에서 무료 결제 지원 요청 생성. 결제 엔지니어가 통상 1영업일 내 연락해 courtesy credit 등 검토.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "Azure 구독 취소·삭제", "url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/cancel-azure-subscription" },
+        { "label": "Microsoft 구독 환불 정책", "url": "https://support.microsoft.com/en-us/accounts-billing/subscriptions/microsoft-subscription-refund-policy" },
+        { "label": "지출 한도 안내", "url": "https://learn.microsoft.com/azure/cost-management-billing/manage/spending-limit" }
+      ],
+      "notes": ["구독 유형에 따라 지출 한도 제공 여부가 다름"],
+      "verified": "official",
+      "sources": [
+        { "title": "Microsoft subscription refund policy", "url": "https://support.microsoft.com/en-us/accounts-billing/subscriptions/microsoft-subscription-refund-policy", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "Cancel and delete your Azure subscription", "url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/cancel-azure-subscription", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "github", "name": "GitHub (Copilot · Actions · Codespaces)", "category": "개발 도구 · 사용량", "usageBased": true,
+      "descriptors": ["GITHUB", "GITHUB INC"],
+      "refund": "플랜 변경 시 미사용 기간 환불 없음. Copilot은 사용량 기반 과금으로 전환(2026). 예산 한도 실패로 초과 청구된 경우 지원팀이 크레딧·환불을 검토한다는 커뮤니티 보고.",
+      "cancellation": "설정 → Billing에서 시트 해제·구독 취소. 해제는 다음 주기부터 반영.",
+      "unauthorized": "GitHub Support → Product: Copilot → Billing 문의로 접수.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "결제 문서", "url": "https://docs.github.com/billing" },
+        { "label": "개인 사용량 기반 과금", "url": "https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals" },
+        { "label": "Copilot 정책·과금 변경 공지 (2026-08-28)", "url": "https://github.blog/changelog/2026-08-28-upcoming-changes-to-github-copilot-policies-and-billing/" }
+      ],
+      "notes": ["예산을 설정해도 초과 청구된 사례가 보고됨"],
+      "verified": "secondary",
+      "sources": [
+        { "title": "GitHub Docs: Making changes to your Copilot license", "url": "https://docs.github.com/en/copilot/reference/copilot-billing/license-changes", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "GitHub Community: Copilot budget limit not stopping usage", "url": "https://github.com/orgs/community/discussions/200020", "accessed": "2026-09-06", "kind": "community" }
+      ]
+    },
+    {
+      "id": "vercel", "name": "Vercel", "category": "호스팅 사용량", "usageBased": true,
+      "descriptors": ["VERCEL", "VERCEL INC"],
+      "refund": "약관상 모든 요금은 명시된 경우를 제외하고 환불 불가. 환불은 지원팀이 수동으로 사례별 검토.",
+      "cancellation": "대시보드 Settings → Billing에서 플랜 변경·취소.",
+      "unauthorized": "Usage 화면 캡처와 함께 지원 티켓. 결제된 인보이스는 다른 결제수단으로 재청구 불가.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "이용약관", "url": "https://vercel.com/legal/terms" },
+        { "label": "Pro 플랜 결제 FAQ", "url": "https://vercel.com/docs/plans/pro-plan/billing" },
+        { "label": "도움말 센터", "url": "https://vercel.com/help" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "Vercel Terms of Service", "url": "https://vercel.com/legal/terms", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "cursor", "name": "Cursor", "category": "AI 개발 도구 구독", "usageBased": true,
+      "descriptors": ["CURSOR", "ANYSPHERE", "CURSOR AI"],
+      "refund": "최근 14일 이내 결제이고 해당 주기에 사용이 없으면 환불 검토. 14일 경과 또는 사용량이 있으면 원칙적으로 환불 불가. 온디맨드(사용량) 요금은 환불 불가. iOS 구독은 Apple 절차.",
+      "cancellation": "설정 → Billing에서 취소. 현재 주기까지 이용.",
+      "unauthorized": "지원팀에 계정 이메일, 청구 금액·날짜, 인보이스 ID를 첨부해 문의.",
+      "processingTime": "환불 승인 시 5~10영업일",
+      "channels": [
+        { "label": "환불 정책", "url": "https://cursor.com/help/account-and-billing/refunds" },
+        { "label": "이용약관", "url": "https://cursor.com/terms-of-service" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "Cursor Docs: Refunds", "url": "https://cursor.com/help/account-and-billing/refunds", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "midjourney", "name": "Midjourney", "category": "AI 이미지 구독", "usageBased": false,
+      "descriptors": ["MIDJOURNEY"],
+      "refund": "계정 전체 기간 누적 GPU 사용이 20분 미만일 때만 환불 자격. 그 이상은 환불 불가.",
+      "cancellation": "계정 페이지에서 취소. 현재 주기 종료까지 이용.",
+      "unauthorized": "Billing Support 문서의 절차로 요청. 확인 메일은 수분 내, 입금은 최대 10영업일.",
+      "processingTime": "최대 10영업일",
+      "channels": [
+        { "label": "환불 요청 문서", "url": "https://docs.midjourney.com/hc/en-us/articles/25386088618253-Requesting-a-Refund" },
+        { "label": "취소·환불 섹션", "url": "https://docs.midjourney.com/hc/en-us/sections/27646307671309-Cancellations-Refunds" }
+      ],
+      "notes": [],
+      "verified": "secondary",
+      "sources": [
+        { "title": "Midjourney Docs: Requesting a Refund", "url": "https://docs.midjourney.com/hc/en-us/articles/25386088618253-Requesting-a-Refund", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "perplexity", "name": "Perplexity", "category": "AI 구독", "usageBased": false,
+      "descriptors": ["PERPLEXITY", "PERPLEXITY AI"],
+      "refund": "EU·영국·터키 14일, 한국·브라질 7일, 그 외 월간 24시간·연간 72시간 이내 요청 시 환불. 계정당 환불 1회 제한. 지역 법·구독 유형·계정 상태에 따라 다름.",
+      "cancellation": "설정에서 취소. 현재 주기 종료까지 이용.",
+      "unauthorized": "도움말 센터 환불 문서의 양식으로 요청. 앱스토어 결제는 스토어 절차.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "환불 정책", "url": "https://www.perplexity.ai/help-center/en/articles/10354288-refunds" }
+      ],
+      "notes": ["한국 거주자 7일 청약철회를 명시한 사업자"],
+      "verified": "secondary",
+      "sources": [
+        { "title": "Perplexity Help Center: Refunds", "url": "https://www.perplexity.ai/help-center/en/articles/10354288-refunds", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "Perplexity refund policy 요약 (2차)", "url": "https://perplexityaimagazine.com/perplexity-hub/perplexity-refund-policy/", "accessed": "2026-09-06", "kind": "secondary" }
+      ]
+    },
+    {
+      "id": "notion", "name": "Notion", "category": "협업 도구 구독", "usageBased": false,
+      "descriptors": ["NOTION", "NOTION LABS"],
+      "refund": "월간은 인보이스 발급 후 3일, 연간은 30일 이내 요청 시 환불. 실수로 추가된 멤버는 제거 후 3일 이내 연락 시 비례 환불. 사용한 크레딧은 환불 불가. Apple 결제는 Apple에 요청.",
+      "cancellation": "설정 → Plans에서 다운그레이드. 현재 주기 종료까지 이용.",
+      "unauthorized": "워크스페이스 소유자 이메일 또는 청구 이메일로 지원팀에 요청.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "환불 정책", "url": "https://www.notion.com/help/refunds" },
+        { "label": "플랜 변경", "url": "https://www.notion.com/help/upgrade-or-downgrade-your-plan" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "Notion Help: Refund policy", "url": "https://www.notion.com/help/refunds", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "canva", "name": "Canva", "category": "디자인 도구 구독", "usageBased": false,
+      "descriptors": ["CANVA", "CANVA PTY"],
+      "refund": "약관상 구독은 대부분 환불 불가이나 요청은 사례별 검토. 일부 2차 자료가 30일 환불을 언급하나 공식 정책과 다름.",
+      "cancellation": "계정 설정 → Billing & plans에서 취소.",
+      "unauthorized": "도움말 센터 구독 환불 문서의 절차로 요청. 앱스토어 결제는 스토어 절차.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "구독 환불 안내", "url": "https://www.canva.com/help/subscription-refunds/" },
+        { "label": "플랜 취소", "url": "https://www.canva.com/help/cancel-canva-plan/" }
+      ],
+      "notes": [],
+      "verified": "secondary",
+      "sources": [
+        { "title": "Canva Help: Refunds for Canva subscriptions", "url": "https://www.canva.com/help/subscription-refunds/", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "figma", "name": "Figma", "category": "디자인 도구 구독", "usageBased": false,
+      "descriptors": ["FIGMA", "FIGMA INC"],
+      "refund": "연간 약정은 갱신일 30일 전 이내에 support@figma.com으로 취소 가능하나 이미 낸 연간 요금은 환불하지 않음(명시된 경우 제외). 가격 인상에 동의하지 않으면 통지 기간 중 해지하고 미사용분 환불. Community 유료 리소스는 24시간 이내 자동 환불.",
+      "cancellation": "관리자 설정에서 플랜 변경. 연간은 지원팀 이메일.",
+      "unauthorized": "support@figma.com 또는 도움말 센터 문의.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "갱신·취소 약관", "url": "https://www.figma.com/legal/renewal-and-cancellation/" },
+        { "label": "Community 리소스 환불", "url": "https://help.figma.com/hc/en-us/articles/12816440381975-Request-a-refund-for-a-Community-resource" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "Figma: Renewal and Cancellation Terms", "url": "https://www.figma.com/legal/renewal-and-cancellation/", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "adobe", "name": "Adobe Creative Cloud", "category": "소프트웨어 구독", "usageBased": false,
+      "descriptors": ["ADOBE", "ADOBE *", "ADOBE SYSTEMS"],
+      "refund": "대부분 플랜은 최초 구매 후 14일 이내 취소 시 전액 환불. 미국 연간 약정 월납은 14일 이후 취소 시 잔여 약정의 50% 조기 해지 수수료. 지역별로 다름. 미국 FTC가 해지 방해로 제재한 사례가 있음(2024~2025).",
+      "cancellation": "계정 → 플랜 → 플랜 관리 → 플랜 취소.",
+      "unauthorized": "계정 페이지 채팅 지원 또는 도움말 센터 문의.",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "구독 취소 안내", "url": "https://helpx.adobe.com/account/individual/subscriptions-and-plans/renewals-and-cancellations/cancel-adobe-subscription.html" },
+        { "label": "계정 관리", "url": "https://account.adobe.com/" }
+      ],
+      "notes": [],
+      "verified": "secondary",
+      "sources": [
+        { "title": "Adobe: Cancel your trial or subscription", "url": "https://helpx.adobe.com/account/individual/subscriptions-and-plans/renewals-and-cancellations/cancel-adobe-subscription.html", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "FTC·DOJ Adobe 합의 보도 (GeekNews 요약)", "url": "https://news.hada.io/topic?id=27678", "accessed": "2026-09-06", "kind": "news" }
+      ]
+    },
+    {
+      "id": "xai", "name": "xAI (Grok · SuperGrok)", "category": "AI 구독 · API", "usageBased": true,
+      "descriptors": ["X.AI", "XAI", "GROK", "SUPERGROK"],
+      "refund": "이미 결제한 금액은 법이 요구하는 경우를 제외하고 환불 불가. 웹·Google Play 결제는 xAI 환불 요청 양식으로 검토. Apple 결제는 Apple에 요청. X Premium은 X 양식.",
+      "cancellation": "grok.com 결제 관리 페이지에서 취소. 취소는 이후 청구를 막을 뿐 이미 청구된 금액은 자동 반환되지 않음.",
+      "unauthorized": "환불 요청 양식(accounts.x.ai/refund)에 청구 내역 첨부. 큰 금액은 SuperGrok Heavy 연간 구독인 경우가 많으니 구매 이력 먼저 확인.",
+      "processingTime": "환불 승인 시 5~10영업일",
+      "channels": [
+        { "label": "Grok FAQ", "url": "https://docs.x.ai/grok/faq" },
+        { "label": "환불 요청 양식", "url": "https://accounts.x.ai/refund" },
+        { "label": "결제 관리", "url": "https://grok.com/?_s=billing" }
+      ],
+      "notes": [],
+      "verified": "official",
+      "sources": [
+        { "title": "xAI Docs: Grok FAQ", "url": "https://docs.x.ai/grok/faq", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "stripe", "name": "Stripe (결제대행)", "category": "결제대행", "usageBased": false, "processor": true,
+      "descriptors": ["STRIPE *", "STRIPE"],
+      "refund": "Stripe는 가맹점을 대신해 환불할 수 없음. 환불은 실제 판매자에게 요청.",
+      "cancellation": "해당 없음. 판매자 계정에서 처리.",
+      "unauthorized": "명세서에 STRIPE로만 표시되면 Stripe 청구 조회 도구(charge lookup)에서 카드 정보로 판매자를 찾은 뒤 판매자에게 직접 연락. 판매자를 알 수 없으면 카드사 이의신청.",
+      "processingTime": "해당 없음",
+      "channels": [
+        { "label": "청구 조회 도구", "url": "https://support.stripe.com/charge-lookup" },
+        { "label": "알 수 없는 청구 안내", "url": "https://support.stripe.com/questions/unknown-charge-on-card-from-stripe" },
+        { "label": "Stripe 이용 사업자 고객 FAQ", "url": "https://support.stripe.com/questions/faq-for-customers-of-businesses-using-stripe" }
+      ],
+      "notes": ["표기 'STRIPE *XXXX'의 별표 뒤가 판매자 식별자"],
+      "verified": "official",
+      "sources": [
+        { "title": "Stripe Support: Charge you don't recognize from Stripe?", "url": "https://support.stripe.com/questions/unknown-charge-on-card-from-stripe", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "paddle", "name": "Paddle (결제대행)", "category": "결제대행", "usageBased": false, "processor": true,
+      "descriptors": ["PADDLE.NET*", "PADDLE.NET", "PADDLE"],
+      "refund": "Paddle이 판매자(Merchant of Record)로서 청구·환불을 처리하는 구조. 환불 요청은 paddle.net에서 청구를 조회한 뒤 진행.",
+      "cancellation": "paddle.net 조회 화면에서 구독 관리 또는 판매자 계정.",
+      "unauthorized": "paddle.net에서 이메일·카드 정보로 청구 조회 후 환불·문의 접수 (페이지 본문을 자동 수집하지 못해 확인 필요).",
+      "processingTime": "미기재",
+      "channels": [
+        { "label": "청구 조회 (paddle.net)", "url": "https://paddle.net" }
+      ],
+      "notes": ["PADDLE.NET* 뒤에 판매자명이 붙는 경우가 많음"],
+      "verified": "partial",
+      "sources": [
+        { "title": "paddle.net", "url": "https://paddle.net", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "accessed": "2026-09-06",
+  "note": "금융당국·소비자기관·법령정보의 해외결제 분쟁 안내. 사용자에게 인용할 때는 title과 url을 함께 보여준다.",
+  "items": [
+    {
+      "id": "fss-2026-06-card-complaints",
+      "publisher": "금융감독원",
+      "title": "신용카드 민원 사례별 소비자 유의사항 (2026-06-09 보도)",
+      "date": "2026-06-09",
+      "points": [
+        "해외 쇼핑몰에서 물건을 받지 못했거나 카드 도용·이중결제 등 해외 부정사용 피해는 결제한 카드사를 통해 국제 브랜드사에 이의제기 신청",
+        "통상 거래일 또는 전표 접수일로부터 90~120일 안에 신청해야 함",
+        "증빙자료: 폐쇄된 해외 사이트 링크, 광고 화면, 주문 내역, 영수증, 판매자와의 메일·채팅 내역",
+        "현지 가맹점 조사와 보상 심사, 결정 권한이 국제 브랜드사에 있어 심사 기준이 까다롭고 약 3~5개월 소요",
+        "카드사 앱의 '해외사용 안심설정'과 '카드결제 알림' 서비스 활용 권고",
+        "신용카드 민원 2022년 6,720건 → 2025년 12,661건 (4년간 88.4% 증가)"
+      ],
+      "sources": [
+        { "title": "머니투데이: 신용카드 민원 4년간 88% 늘어…금감원 해외결제·리볼빙 유의", "url": "https://www.mt.co.kr/finance/2026/06/09/2026060911102978831", "accessed": "2026-09-06", "kind": "news" },
+        { "title": "파이낸셜뉴스: 신용카드 리볼빙·해외결제 주의", "url": "https://www.fnnews.com/news/202606091356037909", "accessed": "2026-09-06", "kind": "news" }
+      ]
+    },
+    {
+      "id": "kca-chargeback-guide",
+      "publisher": "한국소비자원 · 찾기쉬운 생활법령정보",
+      "title": "차지백 서비스 안내",
+      "date": "2017-11-17 (차지백 서비스 가이드) · 생활법령 게시",
+      "points": [
+        "차지백 서비스란 해외에서 신용카드로 물품을 구입한 후 미배송·오배송 등의 피해로 사업자와 자율적 해결이 곤란할 때, 소비자가 신용카드 발급사에 입증서류를 제출하여 거래대금을 환급받는 서비스",
+        "신청 기간은 거래일 또는 물품배송일로부터 120일",
+        "소비자가 차지백 서비스를 신청하면 사업자(가맹점)는 신용카드사에 45일 안에 답변해야 함",
+        "입증서류: 사업자와 주고받은 이메일(대화내역), 물품 구입내역 및 구입영수증 등",
+        "구체적 신청 절차는 각 신용카드 발급사 홈페이지에서 확인"
+      ],
+      "sources": [
+        { "title": "찾기쉬운 생활법령정보: 해외직구 소비자 분쟁해결", "url": "https://www.easylaw.go.kr/CSP/CnpClsMainBtr.laf?popMenu=ov&csmSeq=1504&ccfNo=4&cciNo=1&cnpClsNo=1", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "kca-crossborder-portal",
+      "publisher": "한국소비자원",
+      "title": "국제거래 소비자포털",
+      "date": "상시",
+      "points": [
+        "해외사업자가 제공하는 물품(용역)을 소비생활을 위해 이용하는 과정에서 발생한 소비자 불만·피해를 '상담신청' 메뉴로 접수",
+        "상황별 번역 템플릿, 폴리스리포트 양식, 해외 주요 쇼핑몰·여행사의 취소·환불 정책 제공",
+        "사업용(업무용) 계약은 소비자 상담 대상이 아닐 수 있으므로 계약 주체를 먼저 확인",
+        "담당: 한국소비자원 043-880-5712. 전화 상담은 1372 소비자상담센터"
+      ],
+      "sources": [
+        { "title": "정부24: 국제거래 소비자 포털", "url": "https://www.gov.kr/portal/service/serviceInfo/B55191900010", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "소비자24: 해외직구 분쟁해결 절차", "url": "https://www.consumer.go.kr/consumer/subIndex/1258.do", "accessed": "2026-09-06", "kind": "official" },
+        { "title": "국제거래 소비자포털", "url": "https://crossborder.kca.go.kr", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "fsc-cardnews-overseas-dispute",
+      "publisher": "금융위원회",
+      "title": "내가 쓰지도 않은 돈이 해외에서 결제되었다면? 신용카드 해외사용 이의제기",
+      "date": "2022-11-09",
+      "points": [
+        "신용카드 콜센터나 앱을 통해 즉시 '해외거래정지' 신청 후 '신용카드 해외사용 이의제기'"
+      ],
+      "sources": [
+        { "title": "금융위원회 카드뉴스", "url": "https://www.fsc.go.kr/edu/cardnews?cnId=1441", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "standard-terms-14days",
+      "publisher": "여신금융협회 표준약관 (카드사 게시)",
+      "title": "신용카드 개인회원 표준약관 중 이의제기",
+      "date": "2017-04-01 일부개정본 기준",
+      "points": [
+        "회원이 카드이용대금에 이의가 있는 경우 결제일로부터 14일 이내에 서면, 인터넷 또는 전화로 카드사에 이의를 제기할 수 있음",
+        "회원의 해외매출에 대한 이의신청 및 책임은 해외카드사의 규약에 따르며, 카드사는 이의신청 시 해당 규약을 안내"
+      ],
+      "sources": [
+        { "title": "하나카드 게시 표준약관 PDF", "url": "https://www.hanacard.co.kr/ATTACH/WWW/pdf/provision/creditcard_standard_agreement_170401.pdf", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "consumer24-unrecognized-approval-sms",
+      "publisher": "소비자24 상담사례",
+      "title": "사용한 사실이 없는 해외 사용 승인 문자가 도착한 경우",
+      "date": "상담사례",
+      "points": [
+        "승인 문자 단계에서는 매입 완료(3~4일)까지 기다리며 카드사 홈페이지·앱에서 가맹점 명칭 확인",
+        "해외 사이트 회원 갱신에 따른 자동 청구일 수 있음. 이 경우 카드사 '해외사용 대금 이의신청'으로 비교적 쉽게 해결"
+      ],
+      "sources": [
+        { "title": "소비자24 상담사례 55614", "url": "https://www.consumer.go.kr/user/ftc/consumer/cnsltcase/114/selectCnsltCaseView.do?prgnCnsltCaseSn=55614", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    },
+    {
+      "id": "kb-faq-dcc",
+      "publisher": "KB국민카드 FAQ (참고)",
+      "title": "해외 원화결제(DCC)와 취소 미반영",
+      "date": "상시",
+      "points": [
+        "DCC는 해외 가맹점에서 자국 통화로 결제하게 하는 서비스로 약 3~8% 추가 수수료가 붙을 수 있어 현지 통화 결제 권장. 원화 승인 사전 차단 가능",
+        "취소는 해외 가맹점에 직접 요청하고 취소전표·취소확인증·취소 안내 메일을 받아 둔다. 카드사는 강제 취소할 수 없고 가맹점의 취소 데이터가 접수돼야 확정",
+        "취소 요청 후 최소 2주가 지나도 미반영이면 이의제기"
+      ],
+      "sources": [
+        { "title": "KB국민카드 해외이용 FAQ", "url": "https://m.kbcard.com/CXHIASVCD0032.cms", "accessed": "2026-09-06", "kind": "official" }
+      ]
+    }
+  ]
+}
