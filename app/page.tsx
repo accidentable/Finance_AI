@@ -181,7 +181,14 @@ export default function Page() {
       '', '## 국문 사실 정리', '```', report.drafts.statement, '```',
       '', '## 타임라인', '```', report.drafts.timeline, '```',
       '', '## 참고 자료', ...result.rules.map(r => `- [${r.title}](${r.url}) — ${r.publisher} · ${r.scope}`),
-      ...(merchant ? merchant.links.map(l => `- [${merchant.name} · ${l.label}](${l.url})`) : []),
+      ...(merchant ? [
+        '', `## ${merchant.name} 정책 요약 (${VERIFIED_LABEL[merchant.verified]}, 조회 ${merchant.sources[0]?.accessed ?? ''})`,
+        `- 환불 조건: ${merchant.refund}`, `- 해지 규칙: ${merchant.cancellation}`, `- 미승인·오청구 창구: ${merchant.unauthorized}`,
+        ...(merchant.processingTime ? [`- 환불 처리 기간: ${merchant.processingTime}`] : []),
+        ...merchant.notes.map(n => `- 유의: ${n}`),
+        ...merchant.links.map(l => `- [${merchant.name} · ${l.label}](${l.url})`),
+        ...merchant.sources.map(s => `- 출처: [${s.title}](${s.url})`),
+      ] : []),
     ];
     const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' }));
     const a = document.createElement('a');

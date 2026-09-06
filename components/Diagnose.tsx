@@ -2,6 +2,7 @@
 
 import { SIGNAL_HINT, SIGNAL_LABEL, type CaseResult } from '@/lib/case';
 import { sellerFromDescriptor, type Merchant } from '@/lib/playbook';
+import { VERIFIED_LABEL } from '@/lib/knowledge';
 import { Icon } from './Icon';
 
 type Props = { result: CaseResult; merchant: Merchant | null; onAnswer: (question: string) => void };
@@ -9,6 +10,7 @@ type Props = { result: CaseResult; merchant: Merchant | null; onAnswer: (questio
 export function Diagnose({ result, merchant, onAnswer }: Props) {
   const { parsed, report, verification } = result;
   const seller = sellerFromDescriptor(parsed.descriptor);
+  const accessed = merchant?.sources[0]?.accessed;
   return (
     <div className="stage">
       <section className="sheet hero">
@@ -39,26 +41,40 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
         </section>
 
         <section className="sheet">
-          <div className="sheet__h"><Icon name="globe" size={14} /> 가맹점 표기 해독</div>
+          <div className="sheet__head">
+            <div className="sheet__h"><Icon name="globe" size={14} /> 가맹점 표기 해독</div>
+            {merchant && <span className={`verify-badge ${merchant.verified}`}>{VERIFIED_LABEL[merchant.verified]}</span>}
+          </div>
           <div className="decode">
             <code>{parsed.descriptor || '표기 없음'}</code>
             <Icon name="arrow" size={14} />
             <div>
               <b>{merchant ? merchant.name : parsed.merchant || '가맹점 미확인'}</b>
-              <small>{merchant ? merchant.category : '사전에 없는 가맹점'}</small>
+              <small>{merchant ? merchant.category : '정책 사전에 없는 가맹점'}</small>
             </div>
           </div>
-          {merchant?.processor && <p>실제 판매자: <b>{seller || parsed.merchant || '표기에서 확인 필요'}</b></p>}
+          {merchant?.processor && <p className="seller-line">실제 판매자: <b>{seller || parsed.merchant || '표기에서 확인 필요'}</b></p>}
           {merchant ? (
             <>
-              <p>{merchant.note}</p>
+              <dl className="policy">
+                <div><dt>환불 조건</dt><dd>{merchant.refund}</dd></div>
+                <div><dt>해지 규칙</dt><dd>{merchant.cancellation}</dd></div>
+                <div><dt>미승인·오청구 창구</dt><dd>{merchant.unauthorized}</dd></div>
+                {merchant.processingTime && !/미기재|해당 없음/.test(merchant.processingTime) && <div><dt>환불 처리 기간</dt><dd>{merchant.processingTime}</dd></div>}
+              </dl>
               {merchant.usageBased && <p className="fine">사용량 기반 과금입니다. 사용 기록은 사업자가 보유하므로 본인 사용량 기준과 시점을 정리해 두는 것이 핵심 증빙입니다.</p>}
+              {merchant.notes.length > 0 && (
+                <ul className="guide-notes">
+                  {merchant.notes.map(n => <li key={n}><Icon name="alert" size={12} />{n}</li>)}
+                </ul>
+              )}
               <div className="links">
                 {merchant.links.map(l => <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} <Icon name="external" size={11} /></a>)}
               </div>
+              <p className="sources">출처{accessed ? ` · 조회 ${accessed}` : ''}: {merchant.sources.map((s, i) => <span key={s.url}>{i > 0 && ' · '}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a></span>)}</p>
             </>
           ) : (
-            <p>사전에 등록된 표기가 아닙니다. 영수증 메일의 발신 도메인과 계정 화면의 지원 메뉴에서 공식 창구를 확인하세요. 결제대행 표기(STRIPE *, PADDLE.NET*)라면 별표 뒤가 실제 판매자입니다.</p>
+            <p>정책 사전에 등록된 표기가 아닙니다. 영수증 메일의 발신 도메인과 계정 화면의 지원 메뉴에서 공식 창구를 확인하세요. 결제대행 표기(STRIPE *, PADDLE.NET*)라면 별표 뒤가 실제 판매자입니다.</p>
           )}
           <div className={`verify ${verification.label === '도메인 목록 일치' ? 'ok' : ''}`}>
             <Icon name="shield" size={15} />

@@ -1,58 +1,12 @@
 import type { CaseType, Parsed, Report } from './case';
-import { issuerReasonFor, type Issuer } from './knowledge';
+import { findMerchantPolicy, issuerReasonFor, type Issuer, type MerchantPolicy } from './knowledge';
 
-// 가맹점 표기(디스크립터) 해독 사전. 카드 문자에 찍히는 표기를 실제 서비스와 공식 창구로 연결한다.
-export type Merchant = {
-  id: string;
-  name: string;
-  category: string;
-  usageBased: boolean;
-  processor?: true;
-  patterns: RegExp[];
-  links: { label: string; url: string }[];
-  note: string;
-};
-
-export const MERCHANTS: Merchant[] = [
-  { id: 'openai', name: 'OpenAI (ChatGPT · API)', category: 'AI 구독 · API 사용량', usageBased: true, patterns: [/OPENAI/i, /CHATGPT/i],
-    links: [{ label: '청구·환불 도움말', url: 'https://help.openai.com/en/collections/3943089-billing' }, { label: '미승인 청구 검토 요청', url: 'https://help.openai.com/en/articles/7242625-unauthorized-chatgpt-or-api-credit-purchase-charges-how-to-request-a-refund' }, { label: 'API 결제 설정', url: 'https://platform.openai.com/settings/organization/billing/overview' }],
-    note: '키 유출이 의심되면 키를 비활성화가 아니라 삭제한 뒤 도움말 센터에서 청구 검토를 요청합니다. 구독과 API 크레딧은 별도 계정 항목입니다.' },
-  { id: 'anthropic', name: 'Anthropic (Claude)', category: 'AI 구독 · API 사용량', usageBased: true, patterns: [/ANTHROPIC/i, /CLAUDE/i],
-    links: [{ label: '고객 지원 센터', url: 'https://support.claude.com/' }, { label: '콘솔 결제 설정', url: 'https://console.anthropic.com/settings/billing' }],
-    note: '콘솔에서 사용량과 키 목록을 확인하고, 청구 문의는 지원 센터 티켓으로 접수합니다.' },
-  { id: 'google', name: 'Google (Cloud · Gemini · One)', category: '클라우드 · AI 구독', usageBased: true, patterns: [/GOOGLE/i, /GEMINI/i],
-    links: [{ label: 'Cloud 결제 지원', url: 'https://cloud.google.com/support/billing' }, { label: '예산·알림 설정 안내', url: 'https://cloud.google.com/billing/docs/how-to/budgets' }],
-    note: '알림 전용 예산은 사용량을 차단하지 않습니다. 예상 밖 청구는 결제 지원 케이스로 접수합니다.' },
-  { id: 'aws', name: 'Amazon Web Services', category: '클라우드 사용량', usageBased: true, patterns: [/AMZN\s*WEB/i, /AMAZON\s*WEB/i, /\bAWS\b/i],
-    links: [{ label: 'Support 케이스 열기', url: 'https://console.aws.amazon.com/support/home' }, { label: '청구 안내 문서', url: 'https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/' }, { label: '비용 이상 탐지 설정', url: 'https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html' }],
-    note: '리소스를 먼저 정리·종료한 뒤 Billing 유형의 Support 케이스로 청구 검토를 요청합니다.' },
-  { id: 'azure', name: 'Microsoft Azure', category: '클라우드 사용량', usageBased: true, patterns: [/MSFT/i, /MICROSOFT/i, /AZURE/i],
-    links: [{ label: '비용 관리·청구 문서', url: 'https://learn.microsoft.com/azure/cost-management-billing/' }, { label: '지출 한도 안내', url: 'https://learn.microsoft.com/azure/cost-management-billing/manage/spending-limit' }],
-    note: '구독 유형에 따라 지출 한도 제공 여부가 다릅니다. 포털의 도움말+지원에서 청구 문의를 접수합니다.' },
-  { id: 'xai', name: 'xAI (Grok)', category: 'AI 구독 · API 사용량', usageBased: true, patterns: [/X\.AI/i, /\bXAI\b/i, /GROK/i],
-    links: [{ label: '개발자 콘솔', url: 'https://console.x.ai/' }],
-    note: '콘솔에서 결제 내역과 키를 확인하고 청구 문의를 접수합니다.' },
-  { id: 'github', name: 'GitHub', category: '개발 도구 구독', usageBased: true, patterns: [/GITHUB/i],
-    links: [{ label: '결제 문서', url: 'https://docs.github.com/billing' }],
-    note: 'Actions·Codespaces 사용량과 Copilot 구독은 별도 항목입니다.' },
-  { id: 'vercel', name: 'Vercel', category: '호스팅 사용량', usageBased: true, patterns: [/VERCEL/i],
-    links: [{ label: '도움말 센터', url: 'https://vercel.com/help' }],
-    note: '사용량 초과 청구는 대시보드 Usage 화면을 캡처해 문의합니다.' },
-  { id: 'stripe', name: 'Stripe 결제대행', category: '결제대행 (실제 판매자는 별표 뒤)', usageBased: false, processor: true, patterns: [/STRIPE\s*\*/i],
-    links: [{ label: 'Stripe 지원', url: 'https://support.stripe.com/' }],
-    note: 'STRIPE * 뒤의 이름이 실제 판매자입니다. 환불은 판매자에게 요청하고 Stripe는 처리 대행만 합니다.' },
-  { id: 'paddle', name: 'Paddle 결제대행', category: '결제대행 (실제 판매자 조회 필요)', usageBased: false, processor: true, patterns: [/PADDLE/i],
-    links: [{ label: '청구 내역 조회', url: 'https://paddle.net' }],
-    note: 'PADDLE.NET* 표기는 판매자 대신 청구한 것입니다. paddle.net에서 청구 내역을 조회하면 실제 판매자와 환불 창구가 나옵니다.' },
-];
+// 가맹점 해독. data/merchant-policies.json의 정책을 표기(디스크립터)나 사업자명으로 찾는다.
+export type Merchant = MerchantPolicy & { links: { label: string; url: string }[]; note: string };
 
 export function lookupMerchant(descriptor: string | null, merchant: string | null): Merchant | null {
-  const candidates = [descriptor, merchant].filter((v): v is string => !!v && v.trim().length > 0);
-  for (const text of candidates) {
-    const hit = MERCHANTS.find(m => m.patterns.some(p => p.test(text)));
-    if (hit) return hit;
-  }
-  return null;
+  const policy = findMerchantPolicy(descriptor, merchant);
+  return policy ? { ...policy, links: policy.channels, note: policy.unauthorized } : null;
 }
 
 export function sellerFromDescriptor(descriptor: string | null): string | null {

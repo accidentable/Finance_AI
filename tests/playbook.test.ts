@@ -8,7 +8,9 @@ test('descriptor lookup decodes processors and known merchants without false pos
   assert.equal(sellerFromDescriptor('STRIPE *GAMMAAI'), 'GAMMAAI');
   assert.equal(lookupMerchant('OPENAI *CHATGPT SUBSCR', null)?.id, 'openai');
   assert.equal(lookupMerchant('AMZN WEB SERVICES', null)?.id, 'aws');
-  assert.equal(lookupMerchant(null, 'Google Cloud')?.id, 'google');
+  assert.equal(lookupMerchant(null, 'Google Cloud')?.id, 'google-cloud');
+  assert.equal(lookupMerchant('CURSOR AI POWERED IDE', null)?.id, 'cursor');
+  assert.equal(lookupMerchant('PADDLE.NET* ACMEAPP', null)?.id, 'paddle');
   assert.equal(lookupMerchant('ALPHAWRITE', 'AlphaWrite'), null);
 });
 

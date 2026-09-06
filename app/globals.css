@@ -357,6 +357,13 @@ code, .mono { font-family: var(--font-code); }
 .guide-notes { display: grid; gap: var(--space-2xs); padding: var(--space-sm) var(--space-md); border: var(--hair) dashed var(--rule-strong); border-radius: var(--radius); }
 .guide-notes li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-xs); font-size: var(--text-sm); color: var(--ink-2); line-height: var(--lh-normal); }
 .guide-notes svg { color: var(--stamp); margin-top: 4px; }
+.seller-line { font-size: var(--text-sm); color: var(--ink-2); margin-bottom: var(--space-sm); }
+.seller-line b { font-weight: 600; color: var(--stamp); }
+.policy { display: grid; gap: var(--space-sm); margin: var(--space-sm) 0 var(--space-md); }
+.policy > div { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--space-sm); padding-top: var(--space-sm); border-top: var(--hair) solid var(--rule); }
+.policy > div:first-child { border-top: 0; padding-top: 0; }
+.policy dt { font-family: var(--font-code); font-size: var(--text-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.policy dd { font-size: var(--text-sm); line-height: var(--lh-relaxed); color: var(--ink-2); }
 .sources { margin-top: var(--space-md); font-family: var(--font-code); font-size: 0.62rem; letter-spacing: 0.06em; color: var(--faint); line-height: 1.8; }
 .sources a { color: var(--muted); text-decoration: none; border-bottom: var(--hair) solid var(--rule); }
 .sources a:hover { color: var(--ink); }
