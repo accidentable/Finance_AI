@@ -53,10 +53,12 @@ export function Steps({ result, plan, checks, toggle, txDate, setTxDate, deadlin
           return (
             <li key={phase.id} className={`process__phase is-${state}`} id={`phase-${phase.id}`}>
               <div className="process__marker"><span className="process__n">{finished ? <Icon name="check" size={16} /> : i + 1}</span></div>
-              <div className="process__body">
-                <p className="process__when">{meta.when}{state === 'current' && <span className="process__now">지금 여기</span>}</p>
-                <h3>{meta.title}</h3>
-                <p className="process__goal">{phase.goal}</p>
+              <details className="process__body" open={state === 'current'}>
+                <summary>
+                  <p className="process__when">{meta.when}{state === 'current' && <span className="process__now">지금 여기</span>}</p>
+                  <h3>{meta.title}</h3>
+                  <p className="process__goal">{phase.goal} · 할 일 {phase.steps.length}개{doneIn(phase) ? ` 중 ${doneIn(phase)}개 완료` : ''}</p>
+                </summary>
                 <ul className="checks">
                   {phase.steps.map(step => {
                     const id = `${phase.id}:${step.id}`;
@@ -99,7 +101,7 @@ export function Steps({ result, plan, checks, toggle, txDate, setTxDate, deadlin
                     </div>
                   </>
                 )}
-              </div>
+              </details>
             </li>
           );
         })}

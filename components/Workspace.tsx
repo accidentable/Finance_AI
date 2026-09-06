@@ -9,7 +9,7 @@ import { Icon } from './Icon';
 import { IssuerSelect } from './IssuerSelect';
 import { Steps } from './Steps';
 import { Reasoning } from './Reasoning';
-import { Package } from './Package';
+import { Documents } from './Documents';
 
 type Props = {
   result: CaseResult;
@@ -103,14 +103,7 @@ export function Workspace(p: Props) {
 
       <Reasoning result={result} merchant={merchant} />
 
-      <section className="documents" id="documents" aria-label="카드사에 낼 서류">
-        <div className="documents__head">
-          <div className="sheet__h"><Icon name="file" size={16} /> 카드사에 낼 서류</div>
-          <h2 className="todo__title">3단계에서 쓸 서류예요</h2>
-          <p className="todo__sub">카드사를 고르면 접수 방법이 맞춰지고, 아래 초안은 복사해서 바로 쓸 수 있어요.</p>
-        </div>
-        <Package result={result} merchant={merchant} mapping={p.mapping} evidence={p.evidence} checks={p.checks} toggle={p.toggle} readiness={p.readiness} form={p.form} deadlineRef={deadlineRef} issuer={p.issuer} issuerId={p.issuerId} setIssuerId={p.setIssuerId} onCopy={p.onCopy} onExport={p.onExport} />
-      </section>
+      <Documents result={result} merchant={merchant} mapping={p.mapping} evidence={p.evidence} checks={p.checks} toggle={p.toggle} readiness={p.readiness} form={p.form} issuer={p.issuer} issuerId={p.issuerId} setIssuerId={p.setIssuerId} onCopy={p.onCopy} onExport={p.onExport} />
 
       <div className="followup-area">
         {p.error && <p className="error" role="alert">{p.error}</p>}
