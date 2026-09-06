@@ -66,4 +66,4 @@ npm run build
 - `lib/rules.ts` – 출처가 있는 일반 안내
 - `lib/samples.ts` – 합성 예시 3종
 
-`01_기술명세서.md`는 초기 버전 기록입니다. 현재 동작은 이 README와 구현을 기준으로 합니다.
+제출 서류(기획서·기능명세서)의 원고는 `tools/submit/spec_plan.py`, `spec_spec.py`이고, 완성본은 `docs/submit/`에 hwpx·PDF로 있습니다. 다시 만드는 방법은 `tools/submit/README.md`에 있습니다.
