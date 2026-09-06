@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "분쟁72 — 해외결제 분쟁 첫 72시간",
   description:
-    "흩어진 해외결제 단서를 하나의 사건 보드로 연결합니다. 사실관계와 부족한 증빙을 확인하고, 대응 순서와 제출 초안을 준비하세요.",
+    "해외 AI·클라우드·구독 결제의 이상 청구를 탐지하고, 첫 72시간 대응 계획과 카드사 이의신청 패키지를 만듭니다. 발송과 접수는 직접 결정합니다.",
 };
 
 export const viewport: Viewport = {
