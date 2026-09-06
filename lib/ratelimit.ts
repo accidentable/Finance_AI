@@ -4,7 +4,7 @@ type Bucket = { count: number; reset: number };
 const perKey = new Map<string, Bucket>();
 const global: Bucket = { count: 0, reset: 0 };
 
-export const PER_KEY_LIMIT = Number(process.env.RATE_LIMIT_PER_IP || 8);
+export const PER_KEY_LIMIT = Number(process.env.RATE_LIMIT_PER_IP || 12);
 export const PER_KEY_WINDOW_MS = 10 * 60_000;
 export const GLOBAL_LIMIT = Number(process.env.RATE_LIMIT_GLOBAL || 240);
 export const GLOBAL_WINDOW_MS = 60 * 60_000;
