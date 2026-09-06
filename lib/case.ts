@@ -53,6 +53,7 @@ export type CaseResult = {
   verification: { domain: string | null; label: string; note: string };
   deadline: { status: 'unconfirmed'; note: string };
   mode: 'live' | 'demo';
+  transcript?: string;
 };
 
 export const PAYMENT_LABEL: Record<Parsed['paymentStatus'], string> = {

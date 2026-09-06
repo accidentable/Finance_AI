@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { SAMPLES } from '@/lib/samples';
 import { SLOT_META, type Slots } from '@/lib/case';
 import { parseNotification } from '@/lib/knowledge';
+import { MAX_IMAGES, type ImageInput } from '@/lib/images';
 import { Icon } from './Icon';
 
 const TYPE_LABEL = { approved: '해외승인', declined: '승인 거절', cancelled: '승인 취소' } as const;
@@ -26,7 +27,9 @@ type Props = {
   setSlot: (key: keyof Slots, value: string) => void;
   onSubmit: () => void;
   onSample: (index: number) => void;
-  onUpload: (file: File) => void;
+  onUpload: (files: File[]) => void;
+  images: ImageInput[];
+  onRemoveImage: (index: number) => void;
   saved: boolean;
   onRestore: () => void;
   error: string;
@@ -41,7 +44,7 @@ function today() {
   return `${String(d.getMonth() + 1).padStart(2, '0')}·${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, saved, onRestore, error, busy, canSubmit }: Props) {
+export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, onRemoveImage, saved, onRestore, error, busy, canSubmit }: Props) {
   const upload = useRef<HTMLInputElement>(null);
   return (
     <div className="page page--narrow">
@@ -69,10 +72,26 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, saved, o
                 {m.key === 'sms' && <ParsedPreview text={slots.sms} />}
               </label>
             ))}
+            <div className="attachments">
+              <div className="attachments__head">
+                <span className="slot__h"><Icon name="file" size={14} />사진 · 텍스트 첨부<span className="right">{images.length}/{MAX_IMAGES}장</span></span>
+                <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()} disabled={images.length >= MAX_IMAGES}><Icon name="plus" size={14} /> 사진·txt 추가</button>
+              </div>
+              {images.length > 0 && (
+                <ul className="thumbs">
+                  {images.map((img, i) => (
+                    <li key={i} className="thumb">
+                      <img src={`data:${img.mime};base64,${img.data}`} alt={`첨부 사진 ${i + 1}`} />
+                      <button type="button" className="thumb__x" onClick={() => onRemoveImage(i)} aria-label={`첨부 사진 ${i + 1} 삭제`}><Icon name="close" size={11} /></button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="attachments__hint">카드 문자, 청구 메일, 거래내역·사용량 화면 캡처를 올리면 사진 속 글자를 읽어 분석에 넣습니다. 사진은 자동 마스킹되지 않으니 카드번호·이름은 가리고 올려 주세요.</p>
+            </div>
             <div className="entry__actions">
               <span className="entry__note"><Icon name="shield" size={14} /> 보내기 전에 마스킹 결과를 확인합니다</span>
               <div className="entry__tools">
-                <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()}><Icon name="plus" size={14} /> .txt 추가</button>
                 <button type="submit" className="inkbtn" disabled={busy || !canSubmit}>분석 시작 <span className="hint">Ctrl + Enter</span></button>
               </div>
             </div>
@@ -109,7 +128,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, saved, o
         <p className="colophon__fine">해외결제 이상청구 대응 비서 · 2026 금융 AI Challenge</p>
       </footer>
 
-      <input type="file" accept=".txt,text/plain" hidden ref={upload} onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ''; }} />
+      <input type="file" accept=".txt,text/plain,image/jpeg,image/png,image/webp" multiple hidden ref={upload} onChange={e => { const files = Array.from(e.target.files ?? []); if (files.length) onUpload(files); e.target.value = ''; }} />
     </div>
   );
 }

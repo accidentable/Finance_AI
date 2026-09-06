@@ -114,6 +114,13 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
           ))}
         </ol>
         <p className="fine">모든 사실은 입력 원문에서 그대로 인용한 부분만 남겼습니다. 원문에 없는 내용은 자동으로 제외됩니다.</p>
+        {result.transcript && (
+          <details className="transcript">
+            <summary><Icon name="file" size={13} /> 첨부 사진에서 읽은 내용 <span className="count">{result.transcript.split('\n').filter(Boolean).length}줄</span></summary>
+            <pre>{result.transcript}</pre>
+            <p className="fine">AI가 사진 속 글자를 옮겨 적은 뒤 번호·이메일·키 형태를 가린 결과입니다. 원본과 다른 부분이 있으면 아래 입력창에 바로잡아 다시 연결하세요.</p>
+          </details>
+        )}
       </section>
 
       <section className="sheet">

@@ -7,6 +7,8 @@ import { searchRules, verifySender } from '@/lib/rules';
 import { REASON_CODES, autoChecked, buildPlan, evidenceFor, issuerForm, lookupMerchant, readiness as computeReadiness, referenceDeadline } from '@/lib/playbook';
 import { ISSUERS, VERIFIED_LABEL, findIssuer, issuerReasonFor } from '@/lib/knowledge';
 import { buildReferences } from '@/lib/references';
+import { MAX_IMAGES, downscaleImage, isImageFile, type ImageInput } from '@/lib/images';
+import { TRANSCRIPT_HEADER } from '@/lib/agent';
 import { Icon } from '@/components/Icon';
 import { Landing } from '@/components/Landing';
 import { Workspace, type Stage } from '@/components/Workspace';
@@ -16,6 +18,7 @@ const STORE = 'dispute72-case-v4';
 
 export default function Page() {
   const [slots, setSlots] = useState<Slots>(EMPTY_SLOTS);
+  const [images, setImages] = useState<ImageInput[]>([]);
   const [history, setHistory] = useState('');
   const [followup, setFollowup] = useState('');
   const [result, setResult] = useState<CaseResult | null>(null);
@@ -60,18 +63,19 @@ export default function Page() {
   function applyResult(data: CaseResult, text: string, opts: { keepChecks?: boolean; checks?: Record<string, boolean>; txDate?: string; issuerId?: string } = {}) {
     const auto = Object.fromEntries(Object.entries(autoChecked(data.parsed)).map(([k, v]) => [`ev:${k}`, v]));
     const noPosting = data.parsed.paymentStatus === 'declined' || data.parsed.paymentStatus === 'invoice_only';
+    const fullText = data.transcript && !text.includes(TRANSCRIPT_HEADER) ? `${text}\n\n${TRANSCRIPT_HEADER}\n${data.transcript}` : text;
     setResult(data);
-    setHistory(text);
+    setHistory(fullText);
     setChecks(prev => ({ ...auto, ...(opts.keepChecks ? prev : {}), ...(opts.checks || {}) }));
     setTxDate(opts.txDate ?? (noPosting ? '' : data.parsed.transactionDate || ''));
     if (opts.issuerId !== undefined) setIssuerId(opts.issuerId);
-    else setIssuerId(prev => prev || findIssuer(text)?.id || '');
+    else setIssuerId(prev => prev || findIssuer(fullText)?.id || '');
     setFollowup('');
     setError('');
   }
   function reset() {
     abort.current?.abort();
-    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId(''); setStage('diagnose');
+    setBusy(false); setResult(null); setPrevious(null); setRevision(1); setError(''); setSlots(EMPTY_SLOTS); setImages([]); setHistory(''); setFollowup(''); setChecks({}); setTxDate(''); setIssuerId(''); setStage('diagnose');
   }
   function openSample(index: number) {
     const s = SAMPLES[index];
@@ -80,7 +84,7 @@ export default function Page() {
     setSlots({ ...s.slots });
   }
   function prepare(text: string) {
-    if (text.trim().length < 20) { setError('카드 문자나 상황 설명을 합쳐 20자 이상 적어 주세요.'); return; }
+    if (text.trim().length < 20 && images.length === 0) { setError('카드 문자나 상황 설명을 합쳐 20자 이상 적거나 사진을 첨부해 주세요.'); return; }
     if (text.length > 20000) { setError('한 사건의 내용은 20,000자 이내로 나누어 주세요.'); return; }
     setError('');
     setReview(maskText(text));
@@ -91,7 +95,8 @@ export default function Page() {
     abort.current = controller;
     let finished = false;
     try {
-      const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text, issuerId: issuerId || undefined }), signal: controller.signal });
+      const attached = result ? [] : images; // 후속 분석에는 사진을 다시 보내지 않는다. 옮겨 적은 글이 history에 있다.
+      const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text, issuerId: issuerId || undefined, images: attached.length ? attached : undefined }), signal: controller.signal });
       if (!response.ok) { const body = await response.json(); throw new Error(body.error || '분석을 시작하지 못했습니다.'); }
       const reader = response.body?.getReader();
       if (!reader) throw new Error('분석 연결을 확인해 주세요.');
@@ -113,6 +118,7 @@ export default function Page() {
             ParsedSchema.parse(data.parsed); ReportSchema.parse(data.report);
             if (result) { setPrevious(result); setRevision(n => n + 1); }
             applyResult(data, text, { keepChecks: !!result, txDate: result && txDate ? txDate : undefined });
+            setImages([]);
             setStage('diagnose');
             finished = true;
           } else {
@@ -199,11 +205,24 @@ export default function Page() {
     a.href = url; a.download = '분쟁72_이의신청_패키지.md'; a.click();
     URL.revokeObjectURL(url);
   }
-  async function upload(file: File) {
-    if (file.size > 80000) { setError('80KB 이하 텍스트 파일을 추가해 주세요.'); return; }
-    const t = await file.text();
-    if (combined.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘습니다.'); return; }
-    setSlots(s => ({ ...s, mail: s.mail + (s.mail ? '\n\n' : '') + t }));
+  async function upload(files: File[]) {
+    setError('');
+    let added = 0;
+    for (const file of files) {
+      if (isImageFile(file)) {
+        if (images.length + added >= MAX_IMAGES) { setError(`사진은 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`); break; }
+        try {
+          const img = await downscaleImage(file);
+          setImages(list => list.length >= MAX_IMAGES ? list : [...list, img]);
+          added += 1;
+        } catch { setError('사진을 읽지 못했습니다. JPG, PNG, WEBP 파일인지 확인해 주세요.'); }
+        continue;
+      }
+      if (file.size > 80000) { setError('80KB 이하 텍스트 파일을 추가해 주세요.'); continue; }
+      const t = await file.text();
+      if (combined.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘습니다.'); continue; }
+      setSlots(s => ({ ...s, mail: s.mail + (s.mail ? '\n\n' : '') + t }));
+    }
   }
   function toggle(id: string) { setChecks(c => ({ ...c, [id]: !c[id] })); }
   function answer(question: string) {
@@ -232,7 +251,7 @@ export default function Page() {
       </header>
 
       {!result ? (
-        <Landing slots={slots} setSlot={(k, v) => setSlots(s => ({ ...s, [k]: v }))} onSubmit={() => prepare(combined)} onSample={openSample} onUpload={upload} saved={saved} onRestore={restore} error={error} busy={busy} canSubmit={combined.trim().length >= 20} />
+        <Landing slots={slots} setSlot={(k, v) => setSlots(s => ({ ...s, [k]: v }))} onSubmit={() => prepare(combined)} onSample={openSample} onUpload={upload} images={images} onRemoveImage={i => setImages(list => list.filter((_, j) => j !== i))} saved={saved} onRestore={restore} error={error} busy={busy} canSubmit={combined.trim().length >= 20 || images.length > 0} />
       ) : (
         <Workspace
           result={result} revision={revision} previous={previous} onDismissPrevious={() => setPrevious(null)}
@@ -246,7 +265,7 @@ export default function Page() {
       )}
 
       {busy && <LoadingOverlay stage={loadStage} progress={progress} onCancel={() => { abort.current?.abort(); setBusy(false); }} />}
-      <ReviewDialog review={review} setReview={setReview} onConfirm={() => review && analyze(maskText(review))} onClose={() => setReview(null)} />
+      <ReviewDialog review={review} setReview={setReview} onConfirm={() => review !== null && analyze(maskText(review))} onClose={() => setReview(null)} images={result ? [] : images} />
       <Toast text={toast} />
     </>
   );
