@@ -14,7 +14,7 @@ import { Landing } from '@/components/Landing';
 import { Workspace } from '@/components/Workspace';
 import { LoadingOverlay, ReviewDialog, Toast } from '@/components/Overlays';
 
-const STORE = 'dispute72-case-v4';
+const STORE = 'subcut-case-v1';
 
 export default function Page() {
   const [slots, setSlots] = useState<Slots>(EMPTY_SLOTS);
@@ -173,7 +173,7 @@ export default function Page() {
     const { parsed, report } = result;
     const lines = [
       `# ${parsed.title}`, '',
-      result.mode === 'demo' ? '> 미리 만든 예시 · 실제 분석 아님' : '> 분쟁72 분석 결과 · 검토용',
+      result.mode === 'demo' ? '> 미리 만든 예시 · 실제 분석 아님' : '> 구독컷 분석 결과 · 검토용',
       '', `- 가맹점: ${merchant ? merchant.name : parsed.merchant || '미확인'}${parsed.descriptor ? ` (표기 ${parsed.descriptor})` : ''}`,
       `- 금액: ${parsed.amount || '확인 필요'}`, `- 거래 상태: ${PAYMENT_LABEL[parsed.paymentStatus]}`, `- 유형: ${CASE_LABEL[parsed.caseType]}`,
       `- 참고 기한: ${deadlineRef ? `${deadlineRef.due} (D${deadlineRef.daysLeft < 0 ? '+' : '-'}${Math.abs(deadlineRef.daysLeft)}) · 카드사 확인 필요` : '기준일 확인 필요'}`,
@@ -182,7 +182,7 @@ export default function Page() {
       '', '## 탐지된 신호', ...(parsed.signals.length ? parsed.signals.map(s => `- ${SIGNAL_LABEL[s.kind]}: "${s.evidence}"`) : ['- 없음']),
       '', '## 확인한 사실', ...parsed.facts.map(f => `- ${f.label}: ${f.value}\n  > ${f.quote}`),
       '', '## 확인할 질문', ...report.questions.map(q => `- ${q.question} (${q.why})`),
-      '', '## 72시간 계획',
+      '', '## 24시간 계획',
       ...plan.flatMap(ph => [`### ${ph.window} · ${ph.title}`, ...ph.steps.map(s => `- [${checks[`${ph.id}:${s.id}`] ? 'x' : ' '}] ${s.title}${s.source === 'ai' ? ' (AI 제안)' : ''}: ${s.detail}${s.link ? ` (${s.link.url})` : ''}`), '']),
       '## 사유코드 후보', mapping ? `- Visa ${mapping.visa.code} ${mapping.visa.name}\n- Mastercard ${mapping.mastercard.code} ${mapping.mastercard.name}\n- ${mapping.summary}\n- 주의: ${mapping.caution}` : '- 유형 미확정',
       '', `## 증빙 체크리스트 (${readiness.done}/${readiness.total})`, ...evidence.map(i => `- [${checks[`ev:${i.id}`] ? 'x' : ' '}] ${i.label} · ${i.hint}`),
@@ -213,7 +213,7 @@ export default function Page() {
     ];
     const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' }));
     const a = document.createElement('a');
-    a.href = url; a.download = '분쟁72_이의신청_패키지.md'; a.click();
+    a.href = url; a.download = '구독컷_이의신청_패키지.md'; a.click();
     URL.revokeObjectURL(url);
   }
   async function upload(files: File[]) {
@@ -245,7 +245,7 @@ export default function Page() {
     <>
       <header className="masthead">
         <div className="masthead__in">
-          <button className="brand" onClick={reset} aria-label="분쟁72 홈"><span className="brand__mark">분쟁<span>72</span></span><span className="brand__service">해외결제 이상청구 대응</span></button>
+          <button className="brand" onClick={reset} aria-label="구독컷 홈"><span className="brand__mark">구독<span>컷</span></span><span className="brand__service">해외 구독 이상청구 대응</span></button>
           <div className="masthead__status">
             {result ? (
               <>
@@ -256,7 +256,7 @@ export default function Page() {
                   <button className="ghostbtn small" onClick={exportMarkdown}>내보내기 →</button>
                 </div>
               </>
-            ) : <span className="masthead__confirmed"><i className="masthead__dot" />첫 72시간</span>}
+            ) : <span className="masthead__confirmed"><i className="masthead__dot" />첫 24시간</span>}
           </div>
         </div>
       </header>

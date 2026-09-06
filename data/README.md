@@ -1,6 +1,6 @@
 # 규정·절차 데이터
 
-분쟁72가 LLM 없이 참조하는 근거 자료입니다. 모든 항목에 출처 URL과 조회일(`accessed`)이 붙어 있고, `verified` 등급으로 확인 수준을 표시합니다. 로더는 `lib/knowledge.ts`, 형식 검증은 `tests/knowledge.test.ts`입니다.
+구독컷이 LLM 없이 참조하는 근거 자료입니다. 모든 항목에 출처 URL과 조회일(`accessed`)이 붙어 있고, `verified` 등급으로 확인 수준을 표시합니다. 로더는 `lib/knowledge.ts`, 형식 검증은 `tests/knowledge.test.ts`입니다.
 
 | 파일 | 내용 | 건수 | 확인 수준 |
 |---|---|---|---|

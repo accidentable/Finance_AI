@@ -113,7 +113,7 @@ export function readiness(items: EvidenceItem[], checks: Record<string, boolean>
   return { done, total: items.length, pct: items.length ? Math.round((done / items.length) * 100) : 0 };
 }
 
-// 72시간 플레이북. 사건 유형과 가맹점, 카드사에 따라 정해지는 고정 단계 + AI가 제안한 행동을 긴급도별로 합친다.
+// 24시간 플레이북. 사건 유형과 가맹점, 카드사에 따라 정해지는 고정 단계 + AI가 제안한 행동을 긴급도별로 합친다.
 export type Step = { id: string; title: string; detail: string; link?: { label: string; url: string }; source: 'rule' | 'ai'; refId?: string };
 export type Phase = { id: 'stop' | 'merchant' | 'issuer'; title: string; window: string; goal: string; steps: Step[] };
 
@@ -210,9 +210,9 @@ export function buildPlan(parsed: Parsed, merchant: Merchant | null, actions: Re
   const ai = (urgency: Report['actions'][number]['urgency']) =>
     actions.filter(a => a.urgency === urgency).map((a, i) => ({ id: `ai-${urgency}-${i}`, title: a.title, detail: a.description, source: 'ai' as const, refId: a.sourceId }));
   return [
-    { id: 'stop', title: '지혈', window: '0~2시간', goal: '더 나가는 돈을 막고 증거를 남겨요', steps: [...stopSteps(parsed, merchant), ...ai('now')] },
-    { id: 'merchant', title: '가맹점', window: '24시간 안에', goal: '가장 빨리 환불되는 길이에요', steps: [...merchantSteps(parsed, merchant), ...ai('today')] },
-    { id: 'issuer', title: '카드사 준비', window: '72시간 안에', goal: '거절될 때를 대비해 서류를 갖춰요', steps: [...issuerSteps(parsed, issuer), ...ai('next')] },
+    { id: 'stop', title: '지혈', window: '0~1시간', goal: '더 나가는 돈을 막고 증거를 남겨요', steps: [...stopSteps(parsed, merchant), ...ai('now')] },
+    { id: 'merchant', title: '가맹점', window: '12시간 안에', goal: '가장 빨리 환불되는 길이에요', steps: [...merchantSteps(parsed, merchant), ...ai('today')] },
+    { id: 'issuer', title: '카드사 준비', window: '24시간 안에', goal: '거절될 때를 대비해 서류를 갖춰요', steps: [...issuerSteps(parsed, issuer), ...ai('next')] },
   ];
 }
 

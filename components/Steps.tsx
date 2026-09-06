@@ -19,9 +19,9 @@ type Props = {
 
 // 단계 이름은 사용자가 지금 어디에 있는지 바로 알 수 있게 시간 기준으로 쓴다.
 const PHASE_META: Record<Phase['id'], { when: string; title: string }> = {
-  stop: { when: '지금 바로 · 2시간 안에', title: '더 나가는 돈부터 막기' },
-  merchant: { when: '오늘 안에 · 24시간', title: '가맹점에 환불 요청하기' },
-  issuer: { when: '3일 안에 · 72시간', title: '카드사 접수 준비하기' },
+  stop: { when: '지금 바로 · 1시간 안에', title: '더 나가는 돈부터 막기' },
+  merchant: { when: '이어서 · 12시간 안에', title: '가맹점에 환불 요청하기' },
+  issuer: { when: '24시간 안에', title: '카드사 접수 준비하기' },
 };
 
 export function Steps({ result, plan, checks, toggle, txDate, setTxDate, deadlineRef, issuer, onCopy }: Props) {

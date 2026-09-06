@@ -65,7 +65,7 @@ export function Workspace(p: Props) {
             <p className="nameplate__sub">{report.explanation}</p>
           </div>
           <div className={`stamp ${result.mode === 'demo' ? 'demo' : ''}`} aria-hidden="true">
-            <div className="stamp__inner"><span className="stamp__top">{result.mode === 'demo' ? '예시' : '분석 완료'}</span><span className="stamp__date">{stampDate()}</span><span className="stamp__bottom">분쟁72</span></div>
+            <div className="stamp__inner"><span className="stamp__top">{result.mode === 'demo' ? '예시' : '분석 완료'}</span><span className="stamp__date">{stampDate()}</span><span className="stamp__bottom">구독컷</span></div>
           </div>
           <dl className="details details--5">
             <div className="details__cell"><dt>가맹점</dt><dd>{merchant ? merchant.name : parsed.merchant || '미확인'}{parsed.descriptor && <code>{parsed.descriptor}</code>}</dd></div>

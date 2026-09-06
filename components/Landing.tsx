@@ -51,11 +51,11 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
       <section className="ticket is-ready" aria-label="사건 접수">
         <div className="ticket__main">
           <div className="nameplate">
-            <p className="nameplate__class">첫 72시간</p>
+            <p className="nameplate__class">첫 24시간</p>
             <h1 className="nameplate__line">어떤 결제가<br />이상했나요?</h1>
-            <p className="nameplate__sub">카드 문자나 사진 한 장이면 시작할 수 있어요.</p>
+            <p className="nameplate__sub">카드 문자나 사진 한 장이면 시작할 수 있어요. 24시간 안에 할 일을 정해 드려요.</p>
           </div>
-          <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
+          <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">구독컷</span></div></div>
 
           <form className="slots" onSubmit={e => { e.preventDefault(); onSubmit(); }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = imageFilesFrom(e.dataTransfer); if (files.length) { e.preventDefault(); onUpload(files); } }}>
             {SLOT_META.map((m, i) => (
@@ -124,8 +124,8 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
       </section>
 
       <footer className="colophon">
-        <p className="colophon__mark">분쟁72</p>
-        <p className="colophon__fine">해외결제 이상청구 대응 비서 · 2026 금융 AI Challenge</p>
+        <p className="colophon__mark">구독컷</p>
+        <p className="colophon__fine">해외 구독·클라우드 이상청구 대응 비서 · 2026 금융 AI Challenge</p>
       </footer>
 
       <input type="file" accept=".txt,text/plain,image/jpeg,image/png,image/webp" multiple hidden ref={upload} onChange={e => { const files = Array.from(e.target.files ?? []); if (files.length) onUpload(files); e.target.value = ''; }} />
