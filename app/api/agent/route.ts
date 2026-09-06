@@ -1,86 +1,38 @@
-import { NextRequest } from "next/server";
-import { ImageInput, runAgent, StepEvent } from "@/lib/agent";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const maxDuration = 120;
-
-type Outgoing = StepEvent | { step: "final"; status: "done"; data: unknown } | { step: "fatal"; status: "error"; note: string };
-
-const MAX_IMAGES = 4;
-const MAX_IMAGE_BASE64 = 2_800_000; // 약 2MB 원본. 클라이언트에서 축소해 보냄
-const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-
-function readImages(raw: unknown): ImageInput[] | string {
-  if (raw === undefined || raw === null) return [];
-  if (!Array.isArray(raw)) return "사진 형식이 올바르지 않습니다.";
-  if (raw.length > MAX_IMAGES) return `사진은 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`;
-  const out: ImageInput[] = [];
-  for (const item of raw) {
-    const mime = typeof item?.mime === "string" ? item.mime : "";
-    const data = typeof item?.data === "string" ? item.data : "";
-    if (!ALLOWED_MIME.has(mime)) return "사진은 JPEG, PNG, WEBP, GIF만 첨부할 수 있습니다.";
-    if (!data || data.length > MAX_IMAGE_BASE64) return "사진 한 장의 크기가 너무 큽니다.";
-    if (!/^[A-Za-z0-9+/=]+$/.test(data)) return "사진 데이터가 손상되었습니다.";
-    out.push({ mime, data });
-  }
-  return out;
-}
-
+import { NextRequest } from 'next/server';
+import { runAgent } from '@/lib/agent';
+import { maskText } from '@/lib/case';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 180;
 export async function POST(req: NextRequest) {
-  let body: { input?: unknown; images?: unknown };
+  const reader = req.body?.getReader();
+  if (!reader) return Response.json({ error: '입력 내용이 없습니다.' }, { status: 400 });
+  let bytes = 0, raw = '';
+  const decoder = new TextDecoder();
   try {
-    body = await req.json();
-  } catch {
-    return Response.json({ error: "요청 본문을 읽지 못했습니다." }, { status: 400 });
-  }
-
-  const input = typeof body?.input === "string" ? body.input : "";
-  const images = readImages(body?.images);
-  if (typeof images === "string") {
-    return Response.json({ error: images }, { status: 400 });
-  }
-
-  if (input.trim().length < 20 && images.length === 0) {
-    return Response.json(
-      { error: "청구 메일이나 카드 문자 내용을 20자 이상 붙여넣거나 사진을 첨부해 주세요." },
-      { status: 400 },
-    );
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json({ error: "서버에 API 키가 설정되어 있지 않습니다." }, { status: 500 });
-  }
-
-  const text = input;
-  const encoder = new TextEncoder();
-
-  const stream = new ReadableStream<Uint8Array>({
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      bytes += value.byteLength;
+      if (bytes > 80_000) { await reader.cancel(); return Response.json({ error: '입력은 20,000자 이내로 나누어 주세요.' }, { status: 413 }); }
+      raw += decoder.decode(value, { stream: true });
+    }
+    raw += decoder.decode();
+  } catch { return Response.json({ error: '요청을 읽지 못했습니다.' }, { status: 400 }); }
+  let input: string;
+  try { const body = JSON.parse(raw); if (typeof body.input !== 'string') throw new Error(); input = maskText(body.input.trim()); }
+  catch { return Response.json({ error: '텍스트 형식으로 입력해 주세요.' }, { status: 400 }); }
+  if (input.length < 20 || input.length > 20_000) return Response.json({ error: '내용을 20~20,000자로 입력해 주세요.' }, { status: 400 });
+  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'sk-...') return Response.json({ error: 'OpenAI API 키 연결이 필요합니다. 서버의 .env.local에 OPENAI_API_KEY를 설정해 주세요. 예시 사건은 키 없이 살펴볼 수 있습니다.' }, { status: 503 });
+  const abort = new AbortController();
+  req.signal.addEventListener('abort', () => abort.abort(), { once: true });
+  const encoder = new TextEncoder(); let closed = false;
+  const stream = new ReadableStream({
     async start(controller) {
-      const send = (e: Outgoing) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`));
-      };
-      try {
-        const result = await runAgent(text, send, new Date(), images);
-        send({ step: "final", status: "done", data: result });
-      } catch (err) {
-        send({
-          step: "fatal",
-          status: "error",
-          note: err instanceof Error ? err.message : "판정 중 알 수 없는 오류가 발생했습니다.",
-        });
-      } finally {
-        controller.close();
-      }
-    },
+      const send = (event: unknown) => { if (!closed) controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`)); };
+      try { const result = await runAgent(input, send, abort.signal); send({ step: 'final', data: result }); }
+      catch { if (!abort.signal.aborted) send({ step: 'error', note: '분석 연결에 문제가 생겼습니다. 입력은 유지됩니다. API 키·모델 접근 권한을 확인한 뒤 다시 시도해 주세요.' }); }
+      finally { if (!closed) { closed = true; controller.close(); } }
+    }, cancel() { closed = true; abort.abort(); },
   });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream; charset=utf-8",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-      "X-Accel-Buffering": "no",
-    },
-  });
+  return new Response(stream, { headers: { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' } });
 }

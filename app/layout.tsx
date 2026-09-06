@@ -4,13 +4,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "분쟁72 — 해외결제 분쟁 첫 72시간",
   description:
-    "해외결제 청구 메일과 카드 문자를 붙여넣으면 진위, 결제 상태, 적용 규정, 이의신청 기한, 제기 경로를 판정하고 제출 서류를 만듭니다. 보내는 것은 직접 합니다.",
+    "흩어진 해외결제 단서를 하나의 사건 보드로 연결합니다. 사실관계와 부족한 증빙을 확인하고, 대응 순서와 제출 초안을 준비하세요.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#F4F6F4",
+  themeColor: "#fafbf9",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
