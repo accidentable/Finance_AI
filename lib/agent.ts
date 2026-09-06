@@ -35,9 +35,18 @@ const REPORT = BOUNDARY + ` 제공된 parsed(사실)와 references(규정·정�
 
 export type AgentOptions = { issuerId?: string; images?: ImageInput[] };
 
+// 호스팅 환경변수에 줄바꿈·따옴표·공백이 섞여 들어오는 경우가 있어 첫 줄만 쓰고 다듬는다.
+export function cleanEnv(value: string | undefined): string {
+  return (value ?? '').split(/\r?\n/)[0].trim().replace(/^['"]|['"]$/g, '').trim();
+}
+export const DEFAULT_MODEL = 'gpt-5.6-sol';
+export function resolveModel(): string {
+  return cleanEnv(process.env.OPENAI_MODEL) || DEFAULT_MODEL;
+}
+
 export async function runAgent(input: string, emit: (event: StepEvent) => void, signal?: AbortSignal, opts: AgentOptions = {}): Promise<CaseResult> {
-  const client = new OpenAI({ timeout: 80_000, maxRetries: 1 });
-  const model = process.env.OPENAI_MODEL || 'gpt-5.6-sol';
+  const client = new OpenAI({ apiKey: cleanEnv(process.env.OPENAI_API_KEY), timeout: 80_000, maxRetries: 1 });
+  const model = resolveModel();
   const images = opts.images ?? [];
 
   // 1. 첨부 사진이 있으면 글자를 먼저 옮겨 적어 원문에 이어 붙인다. 이후 단계는 텍스트만 본다.

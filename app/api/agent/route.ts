@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
-import { runAgent } from '@/lib/agent';
+import { cleanEnv, runAgent } from '@/lib/agent';
 import { maskText } from '@/lib/case';
 import { validateImages, type ImageInput } from '@/lib/images';
+import { checkRateLimit, clientKey } from '@/lib/ratelimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,7 +38,13 @@ export async function POST(req: NextRequest) {
 
   if (input.length > 20_000) return Response.json({ error: '내용을 20,000자 이내로 나누어 주세요.' }, { status: 400 });
   if (images.length === 0 && input.length < 20) return Response.json({ error: '카드 문자나 상황 설명을 20자 이상 적거나 사진을 첨부해 주세요.' }, { status: 400 });
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'sk-...') return Response.json({ error: 'OpenAI API 키 연결이 필요합니다. 서버의 .env.local에 OPENAI_API_KEY를 설정해 주세요. 예시 사건은 키 없이 살펴볼 수 있습니다.' }, { status: 503 });
+  const apiKey = cleanEnv(process.env.OPENAI_API_KEY);
+  if (!apiKey || apiKey === 'sk-...') return Response.json({ error: 'OpenAI API 키 연결이 필요합니다. 서버의 .env.local에 OPENAI_API_KEY를 설정해 주세요. 예시 사건은 키 없이 살펴볼 수 있습니다.' }, { status: 503 });
+  const limit = checkRateLimit(clientKey(req.headers));
+  if (!limit.ok) {
+    const minutes = Math.max(1, Math.ceil(limit.retryAfter / 60));
+    return Response.json({ error: limit.scope === 'global' ? `지금은 분석 요청이 몰려 있습니다. 약 ${minutes}분 뒤 다시 시도해 주세요. 예시 사건은 계속 볼 수 있습니다.` : `짧은 시간에 분석을 여러 번 요청했습니다. 약 ${minutes}분 뒤 다시 시도해 주세요.` }, { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } });
+  }
 
   const abort = new AbortController();
   req.signal.addEventListener('abort', () => abort.abort(), { once: true });
