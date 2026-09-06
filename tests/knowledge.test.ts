@@ -97,7 +97,7 @@ test('issuer reason mapping and plan wiring use the selected issuer', () => {
   assert.match(step.detail, /110일/);
   assert.ok(step.link?.url.startsWith('https://'));
   const form = issuerForm(sub.result.parsed, null, REASON_CODES.cancelled_recurring, '', kb);
-  assert.equal(form.find(f => f.label === '카드사 사유 명칭')?.value, '취소 미처리');
+  assert.equal(form.find(f => f.label === '카드사 사유 이름')?.value, '취소 미처리');
   assert.ok(form.find(f => f.label === '접수 채널'));
   assert.ok(!issuerForm(sub.result.parsed, null, null, '').some(f => f.label === '접수 채널'));
 });

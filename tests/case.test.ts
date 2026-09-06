@@ -14,7 +14,7 @@ test('sensitive patterns are hidden while dates and amounts survive', () => {
 test('domain match never authenticates sender or lookalike domains', () => {
   assert.equal(verifySender('openai.com.evil.example').label, '도메인 추가 확인');
   assert.equal(verifySender('mail.openai.com').label, '도메인 목록 일치');
-  assert.match(verifySender('openai.com').note, /인증할 수 없습니다/);
+  assert.match(verifySender('openai.com').note, /인증할 수 없/);
   assert.equal(verifySender(null).label, '발신 정보 부족');
 });
 test('no arbitrary deadline even for posted transactions; declined cases retain issuer help', () => {

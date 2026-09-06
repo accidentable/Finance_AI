@@ -86,15 +86,15 @@ export const SIGNAL_LABEL: Record<SignalKind, string> = {
 };
 
 export const SIGNAL_HINT: Record<SignalKind, string> = {
-  spike: '사용량 과금에서 급증은 키 유출이나 설정 오류의 첫 신호입니다.',
-  duplicate: '승인 알림 중복과 실제 매입 두 건은 다릅니다. 매입 내역으로 구분합니다.',
-  post_cancel: '해지 요청일과 해지 효력일이 다를 수 있어 청구 대상 기간 확인이 필요합니다.',
-  unauthorized_usage: '사용 기록은 사업자가 보유합니다. 본인 사용량 기준과 시점을 정리해 두세요.',
-  retry_declined: '거절이 반복되면 다른 카드나 갱신 카드로 재시도될 수 있습니다.',
-  dcc: '현지 통화 대신 원화로 결제되면 추가 수수료가 붙습니다. 통화 표시를 확인하세요.',
-  trial_conversion: '체험 종료일과 첫 청구일, 사전 안내 여부를 확인합니다.',
-  expired_card_rebill: '토큰 결제 가맹점은 갱신 카드로 계속 청구할 수 있습니다. 가맹점 해지가 필요합니다.',
-  sender_mismatch: '청구 메일의 발신 주소가 공식 도메인과 다르면 직접 접속해 확인합니다.',
+  spike: '사용량 요금이 갑자기 늘었다면 키가 새어 나갔거나 설정이 잘못됐을 수 있어요.',
+  duplicate: '승인 문자가 두 번 온 것과 실제로 두 번 청구된 건 달라요. 매입 내역에서 확인해요.',
+  post_cancel: '해지를 요청한 날과 해지가 적용되는 날이 다를 수 있어요. 이번 청구가 어느 기간 요금인지 봐야 해요.',
+  unauthorized_usage: '사용 기록은 사업자가 갖고 있어요. 내가 평소에 얼마나 썼는지, 언제부터 이상했는지 정리해 두세요.',
+  retry_declined: '거절이 반복되면 다른 카드나 새로 발급된 카드로 다시 시도될 수 있어요.',
+  dcc: '현지 통화 대신 원화로 결제되면 수수료가 더 붙어요. 문자에 찍힌 통화를 확인해요.',
+  trial_conversion: '무료 체험이 끝난 날과 첫 청구일, 미리 안내가 있었는지 확인해요.',
+  expired_card_rebill: '카드를 바꿔도 가맹점이 새 카드로 계속 청구할 수 있어요. 가맹점에서 직접 해지해야 해요.',
+  sender_mismatch: '청구 메일의 보낸 주소가 공식 도메인과 다르면 링크 대신 서비스에 직접 접속해 확인해요.',
 };
 
 // 첫 화면 입력 슬롯. 서버로는 헤더를 붙여 하나의 문자열로 합쳐 보낸다.
@@ -102,8 +102,8 @@ export type Slots = { sms: string; mail: string; note: string };
 export const EMPTY_SLOTS: Slots = { sms: '', mail: '', note: '' };
 export const SLOT_META: { key: keyof Slots; label: string; hint: string; placeholder: string }[] = [
   { key: 'sms', label: '카드 알림 문자 · 거래내역', hint: '가장 중요', placeholder: '[Web발신] 해외승인 STRIPE *GAMMAAI USD 12,000.00 09/04 14:02 승인거절' },
-  { key: 'mail', label: '청구 메일 · 청구서', hint: '선택', placeholder: '발신 주소와 본문을 그대로 붙여넣으면 발신 도메인도 확인합니다' },
-  { key: 'note', label: '내 상황 설명', hint: '한 줄이어도 좋아요', placeholder: '지난달까지 월 40달러였는데 이번 달 12,000달러가 청구됐어요. 키는 삭제했습니다.' },
+  { key: 'mail', label: '청구 메일 · 청구서', hint: '있으면', placeholder: '보낸 주소와 본문을 그대로 붙여넣으면 보낸 곳도 확인해요' },
+  { key: 'note', label: '내 상황 설명', hint: '한 줄이어도 괜찮아요', placeholder: '지난달까지 월 40달러였는데 이번 달 12,000달러가 청구됐어요. 키는 삭제했어요.' },
 ];
 export function combineSlots(slots: Slots): string {
   return SLOT_META.map(m => { const v = slots[m.key].trim(); return v ? `[${m.label}]\n${v}` : ''; }).filter(Boolean).join('\n\n');
@@ -148,7 +148,7 @@ export function deadlineFor(status: Parsed['paymentStatus']): CaseResult['deadli
   return {
     status: 'unconfirmed',
     note: status === 'declined' || status === 'invoice_only'
-      ? '매입된 거래가 확인되지 않았습니다. 반복 결제 방지 상담은 지금 진행할 수 있습니다.'
-      : '사유별 기준일과 카드사 접수 요건 확인이 필요합니다. 임의로 신청기한을 계산하지 않습니다.',
+      ? '아직 실제로 청구(매입)된 거래가 없어요. 반복 결제를 막는 상담은 지금 바로 할 수 있어요.'
+      : '사유마다 기준일이 달라요. 정확한 신청 기한은 카드사에서 확인해야 해요.',
   };
 }

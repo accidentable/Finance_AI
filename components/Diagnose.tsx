@@ -14,7 +14,7 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
   return (
     <div className="stage">
       <section className="sheet hero">
-        <div className="sheet__h"><Icon name="sparkle" size={14} /> {result.mode === 'demo' ? '합성 예시의 판단 요약' : 'AI 판단 요약'}</div>
+        <div className="sheet__h"><Icon name="sparkle" size={14} /> {result.mode === 'demo' ? '예시의 판단 요약' : 'AI가 정리한 판단'}</div>
         <h2>{report.headline}</h2>
         <p>{report.explanation}</p>
         {report.basis.length > 0 && (
@@ -33,14 +33,14 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
             })}
           </ol>
         )}
-        <p className="fine">근거는 수집한 규정·정책 조각에서만 고릅니다. 조각에 없는 코드나 기한은 쓰지 않도록 제한했습니다. 조회일 {result.references[0]?.accessed ?? ''}.</p>
+        <p className="fine">근거는 모아 둔 규정·정책에서만 골라요. 거기 없는 코드나 기한은 쓰지 않도록 막아 뒀어요. 조회일 {result.references[0]?.accessed ?? ''}.</p>
       </section>
 
       <div className="grid-2">
         <section className="sheet">
           <div className="sheet__h"><Icon name="radar" size={14} /> 탐지된 이상 신호 <span className="count">{parsed.signals.length}</span></div>
           {parsed.signals.length === 0 ? (
-            <p className="empty">원문에서 뚜렷한 이상 신호를 찾지 못했습니다. 아래 사실과 질문으로 상황을 좁혀 보세요.</p>
+            <p className="empty">원문에서 뚜렷한 이상 신호를 찾지 못했어요. 아래 사실과 질문으로 상황을 좁혀 보세요.</p>
           ) : (
             <ul className="signals">
               {parsed.signals.map(s => (
@@ -67,7 +67,7 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
             <Icon name="arrow" size={14} />
             <div>
               <b>{merchant ? merchant.name : parsed.merchant || '가맹점 미확인'}</b>
-              <small>{merchant ? merchant.category : '정책 사전에 없는 가맹점'}</small>
+              <small>{merchant ? merchant.category : '정책 사전에 없는 가맹점이에요'}</small>
             </div>
           </div>
           {merchant?.processor && <p className="seller-line">실제 판매자: <b>{seller || parsed.merchant || '표기에서 확인 필요'}</b></p>}
@@ -79,7 +79,7 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
                 <div><dt>미승인·오청구 창구</dt><dd>{merchant.unauthorized}</dd></div>
                 {merchant.processingTime && !/미기재|해당 없음/.test(merchant.processingTime) && <div><dt>환불 처리 기간</dt><dd>{merchant.processingTime}</dd></div>}
               </dl>
-              {merchant.usageBased && <p className="fine">사용량 기반 과금입니다. 사용 기록은 사업자가 보유하므로 본인 사용량 기준과 시점을 정리해 두는 것이 핵심 증빙입니다.</p>}
+              {merchant.usageBased && <p className="fine">사용량만큼 내는 서비스예요. 사용 기록은 사업자가 갖고 있으니, 내가 평소 얼마나 썼는지와 언제부터 이상했는지가 핵심 증빙이에요.</p>}
               {merchant.notes.length > 0 && (
                 <ul className="guide-notes">
                   {merchant.notes.map(n => <li key={n}><Icon name="alert" size={12} />{n}</li>)}
@@ -91,7 +91,7 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
               <p className="sources">출처{accessed ? ` · 조회 ${accessed}` : ''}: {merchant.sources.map((s, i) => <span key={s.url}>{i > 0 && ' · '}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a></span>)}</p>
             </>
           ) : (
-            <p>정책 사전에 등록된 표기가 아닙니다. 영수증 메일의 발신 도메인과 계정 화면의 지원 메뉴에서 공식 창구를 확인하세요. 결제대행 표기(STRIPE *, PADDLE.NET*)라면 별표 뒤가 실제 판매자입니다.</p>
+            <p>정책 사전에 없는 표기예요. 영수증 메일의 보낸 도메인과 계정 화면의 고객지원 메뉴에서 공식 창구를 찾아 주세요. STRIPE *나 PADDLE.NET* 같은 결제대행 표기라면 별표 뒤가 실제 판매자예요.</p>
           )}
           <div className={`verify ${verification.label === '도메인 목록 일치' ? 'ok' : ''}`}>
             <Icon name="shield" size={15} />
@@ -113,19 +113,19 @@ export function Diagnose({ result, merchant, onAnswer }: Props) {
             </li>
           ))}
         </ol>
-        <p className="fine">모든 사실은 입력 원문에서 그대로 인용한 부분만 남겼습니다. 원문에 없는 내용은 자동으로 제외됩니다.</p>
+        <p className="fine">원문에 그대로 있는 내용만 사실로 남겼어요. 원문에 없는 말은 자동으로 뺐어요.</p>
         {result.transcript && (
           <details className="transcript">
             <summary><Icon name="file" size={13} /> 첨부 사진에서 읽은 내용 <span className="count">{result.transcript.split('\n').filter(Boolean).length}줄</span></summary>
             <pre>{result.transcript}</pre>
-            <p className="fine">AI가 사진 속 글자를 옮겨 적은 뒤 번호·이메일·키 형태를 가린 결과입니다. 원본과 다른 부분이 있으면 아래 입력창에 바로잡아 다시 연결하세요.</p>
+            <p className="fine">AI가 사진 속 글자를 옮겨 적고 번호·이메일·키 모양을 가린 결과예요. 원본과 다르면 아래 입력창에 바로잡아서 다시 연결해 주세요.</p>
           </details>
         )}
       </section>
 
       <section className="sheet">
         <div className="sheet__h"><Icon name="search" size={14} /> 확인할 질문 <span className="count">{report.questions.length}</span></div>
-        {report.questions.length === 0 ? <p className="empty">추가 질문이 없습니다. 사실관계를 검토해 주세요.</p> : (
+        {report.questions.length === 0 ? <p className="empty">더 물어볼 게 없어요. 사실관계만 한 번 더 봐 주세요.</p> : (
           <ul className="questions">
             {report.questions.map((q, i) => (
               <li key={i}>

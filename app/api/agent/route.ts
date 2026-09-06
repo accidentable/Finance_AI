@@ -12,18 +12,18 @@ const MAX_BODY = 16_000_000; // 사진 4장(각 2.8MB base64) + 텍스트
 
 export async function POST(req: NextRequest) {
   const reader = req.body?.getReader();
-  if (!reader) return Response.json({ error: '입력 내용이 없습니다.' }, { status: 400 });
+  if (!reader) return Response.json({ error: '입력 내용이 없어요.' }, { status: 400 });
   let bytes = 0, raw = '';
   const decoder = new TextDecoder();
   try {
     while (true) {
       const { value, done } = await reader.read(); if (done) break;
       bytes += value.byteLength;
-      if (bytes > MAX_BODY) { await reader.cancel(); return Response.json({ error: '첨부가 너무 큽니다. 사진을 줄이거나 장수를 줄여 주세요.' }, { status: 413 }); }
+      if (bytes > MAX_BODY) { await reader.cancel(); return Response.json({ error: '첨부가 너무 커요. 사진을 줄이거나 장수를 줄여 주세요.' }, { status: 413 }); }
       raw += decoder.decode(value, { stream: true });
     }
     raw += decoder.decode();
-  } catch { return Response.json({ error: '요청을 읽지 못했습니다.' }, { status: 400 }); }
+  } catch { return Response.json({ error: '요청을 읽지 못했어요.' }, { status: 400 }); }
 
   let input: string; let issuerId: string | undefined; let images: ImageInput[];
   try {
@@ -34,16 +34,16 @@ export async function POST(req: NextRequest) {
     const checked = validateImages(body.images);
     if (typeof checked === 'string') return Response.json({ error: checked }, { status: 400 });
     images = checked;
-  } catch { return Response.json({ error: '텍스트 형식으로 입력해 주세요.' }, { status: 400 }); }
+  } catch { return Response.json({ error: '텍스트 형식으로 넣어 주세요.' }, { status: 400 }); }
 
-  if (input.length > 20_000) return Response.json({ error: '내용을 20,000자 이내로 나누어 주세요.' }, { status: 400 });
-  if (images.length === 0 && input.length < 20) return Response.json({ error: '카드 문자나 상황 설명을 20자 이상 적거나 사진을 첨부해 주세요.' }, { status: 400 });
+  if (input.length > 20_000) return Response.json({ error: '한 번에 20,000자까지만 넣을 수 있어요. 나눠서 올려 주세요.' }, { status: 400 });
+  if (images.length === 0 && input.length < 20) return Response.json({ error: '카드 문자나 상황 설명을 20자 이상 적거나 사진을 올려 주세요.' }, { status: 400 });
   const apiKey = cleanEnv(process.env.OPENAI_API_KEY);
-  if (!apiKey || apiKey === 'sk-...') return Response.json({ error: 'OpenAI API 키 연결이 필요합니다. 서버의 .env.local에 OPENAI_API_KEY를 설정해 주세요. 예시 사건은 키 없이 살펴볼 수 있습니다.' }, { status: 503 });
+  if (!apiKey || apiKey === 'sk-...') return Response.json({ error: '아직 OpenAI 키가 연결되지 않았어요. 서버 환경변수 OPENAI_API_KEY를 설정해 주세요. 예시 사건은 키 없이 볼 수 있어요.' }, { status: 503 });
   const limit = checkRateLimit(clientKey(req.headers));
   if (!limit.ok) {
     const minutes = Math.max(1, Math.ceil(limit.retryAfter / 60));
-    return Response.json({ error: limit.scope === 'global' ? `지금은 분석 요청이 몰려 있습니다. 약 ${minutes}분 뒤 다시 시도해 주세요. 예시 사건은 계속 볼 수 있습니다.` : `짧은 시간에 분석을 여러 번 요청했습니다. 약 ${minutes}분 뒤 다시 시도해 주세요.` }, { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } });
+    return Response.json({ error: limit.scope === 'global' ? `지금은 분석 요청이 몰려 있어요. 약 ${minutes}분 뒤에 다시 시도해 주세요. 예시 사건은 계속 볼 수 있어요.` : `짧은 시간에 분석을 여러 번 요청했어요. 약 ${minutes}분 뒤에 다시 시도해 주세요.` }, { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } });
   }
 
   const abort = new AbortController();
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         if (!abort.signal.aborted) {
           const detail = err instanceof Error ? err.message : '';
           console.error('[agent]', detail);
-          send({ step: 'error', note: `분석 연결에 문제가 생겼습니다. 입력은 유지됩니다. API 키·모델 접근 권한을 확인한 뒤 다시 시도해 주세요.${detail ? ` (${detail.slice(0, 160)})` : ''}` });
+          send({ step: 'error', note: `분석 연결에 문제가 생겼어요. 입력은 그대로 있어요. API 키와 모델 접근 권한을 확인한 뒤 다시 시도해 주세요.${detail ? ` (${detail.slice(0, 160)})` : ''}` });
         }
       }
       finally { if (!closed) { closed = true; controller.close(); } }

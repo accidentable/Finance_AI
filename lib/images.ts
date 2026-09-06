@@ -7,15 +7,15 @@ export const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export function validateImages(raw: unknown): ImageInput[] | string {
   if (raw === undefined || raw === null) return [];
-  if (!Array.isArray(raw)) return '사진 형식이 올바르지 않습니다.';
-  if (raw.length > MAX_IMAGES) return `사진은 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`;
+  if (!Array.isArray(raw)) return '사진 형식이 올바르지 않아요.';
+  if (raw.length > MAX_IMAGES) return `사진은 ${MAX_IMAGES}장까지 올릴 수 있어요.`;
   const out: ImageInput[] = [];
   for (const item of raw) {
     const mime = typeof item?.mime === 'string' ? item.mime : '';
     const data = typeof item?.data === 'string' ? item.data : '';
-    if (!ALLOWED_MIME.has(mime)) return '사진은 JPEG, PNG, WEBP만 첨부할 수 있습니다.';
-    if (!data || data.length > MAX_IMAGE_BASE64) return '사진 한 장의 크기가 너무 큽니다. 화면을 잘라서 올려 주세요.';
-    if (!/^[A-Za-z0-9+/=]+$/.test(data)) return '사진 데이터가 손상되었습니다.';
+    if (!ALLOWED_MIME.has(mime)) return '사진은 JPEG, PNG, WEBP만 올릴 수 있어요.';
+    if (!data || data.length > MAX_IMAGE_BASE64) return '사진 한 장이 너무 커요. 화면을 잘라서 올려 주세요.';
+    if (!/^[A-Za-z0-9+/=]+$/.test(data)) return '사진 데이터가 손상됐어요.';
     out.push({ mime, data });
   }
   return out;

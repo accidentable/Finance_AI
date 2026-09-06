@@ -78,7 +78,7 @@ export function Workspace(p: Props) {
             <p className="nameplate__sub">{parsed.summary}</p>
           </div>
           <div className={`stamp ${result.mode === 'demo' ? 'demo' : ''}`} aria-hidden="true">
-            <div className="stamp__inner"><span className="stamp__top">{result.mode === 'demo' ? '합성 예시' : '분석 완료'}</span><span className="stamp__date">{stampDate()}</span><span className="stamp__bottom">분쟁72</span></div>
+            <div className="stamp__inner"><span className="stamp__top">{result.mode === 'demo' ? '예시' : '분석 완료'}</span><span className="stamp__date">{stampDate()}</span><span className="stamp__bottom">분쟁72</span></div>
           </div>
           <dl className="details details--5">
             <div className="details__cell"><dt>가맹점</dt><dd>{merchant ? merchant.name : parsed.merchant || '미확인'}{parsed.descriptor && <code>{parsed.descriptor}</code>}</dd></div>
@@ -93,7 +93,7 @@ export function Workspace(p: Props) {
       {p.previous && (
         <div className="change-banner">
           <Icon name="link" size={14} />
-          <span>새 단서로 갱신했어요 · {p.previous.parsed.paymentStatus !== parsed.paymentStatus ? `${PAYMENT_LABEL[p.previous.parsed.paymentStatus]} → ${PAYMENT_LABEL[parsed.paymentStatus]}` : `확인된 단서 ${p.previous.parsed.facts.length}개 → ${parsed.facts.length}개`}</span>
+          <span>새 단서로 업데이트했어요 · {p.previous.parsed.paymentStatus !== parsed.paymentStatus ? `${PAYMENT_LABEL[p.previous.parsed.paymentStatus]} → ${PAYMENT_LABEL[parsed.paymentStatus]}` : `확인된 단서 ${p.previous.parsed.facts.length}개 → ${parsed.facts.length}개`}</span>
           <button className="iconbtn" onClick={p.onDismissPrevious} aria-label="갱신 알림 닫기"><Icon name="close" size={13} /></button>
         </div>
       )}
@@ -119,10 +119,10 @@ export function Workspace(p: Props) {
         {p.error && <p className="error" role="alert">{p.error}</p>}
         <form className="followup" onSubmit={e => { e.preventDefault(); p.onFollowup(); }}>
           <Icon name="plus" size={16} />
-          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="가맹점 회신, 매입 확인, 새로 알게 된 내용을 붙여넣으면 다시 분석합니다" rows={1} />
+          <textarea aria-label="새로운 단서 추가" value={p.followup} onChange={e => p.setFollowup(e.target.value)} maxLength={8000} placeholder="새로 받은 답장이나 알게 된 내용을 붙여넣으면 다시 분석해요" rows={1} />
           <button className="inkbtn" disabled={p.busy || p.followup.trim().length < 5}>연결 <Icon name="arrow" size={14} /></button>
         </form>
-        <span>{result.mode === 'demo' ? '합성 예시 · 새 내용을 연결하면 OpenAI API로 분석합니다' : '검토용 결과 · 발송과 접수는 직접 진행합니다'}</span>
+        <span>{result.mode === 'demo' ? '미리 만든 예시예요 · 새 내용을 연결하면 OpenAI로 분석해요' : '검토용 결과예요 · 보내고 접수하는 건 직접 해요'}</span>
       </div>
     </div>
   );

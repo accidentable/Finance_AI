@@ -37,7 +37,7 @@ export function Board({ result, onAnswer }: { result: CaseResult; onAnswer: (que
   const nodes: Node[] = [
     ...result.parsed.facts.map((f, i) => ({ id: `fact-${i}`, kind: 'fact' as const, title: f.label, label: `단서 ${String(i + 1).padStart(2, '0')}`, text: f.value, index: i, width: 270, height: 146, pos: { x: 30 + Math.floor(i / 3) * -300, y: 60 + (i % 3) * 160 } })),
     { id: 'case', kind: 'case', title: result.parsed.title, label: '사건의 중심', text: result.parsed.summary, width: 338, height: 240, pos: { x: 430, y: 140 } },
-    { id: 'question', kind: 'question', title: '아직 연결되지 않은 단서', label: '추가 확인', text: result.report.questions[0]?.question || '추가 질문이 없습니다. 사실관계를 검토해 주세요.', width: 338, height: 142, pos: { x: 430, y: 418 } },
+    { id: 'question', kind: 'question', title: '아직 연결되지 않은 단서', label: '추가 확인', text: result.report.questions[0]?.question || '더 물어볼 게 없어요. 사실관계만 한 번 더 봐 주세요.', width: 338, height: 142, pos: { x: 430, y: 418 } },
     { id: 'action', kind: 'action', title: '이 사건에 맞는 행동', label: 'AI 제안', text: '', width: 300, height: 290, pos: { x: 900, y: 60 } },
     { id: 'source', kind: 'source', title: '판단을 뒷받침하는 자료', label: '연결된 근거', text: '', width: 300, height: 185, pos: { x: 900, y: 380 } },
   ];
@@ -98,7 +98,7 @@ export function Board({ result, onAnswer }: { result: CaseResult; onAnswer: (que
               ) : n.kind === 'action' ? (
                 <ol className="node-actions">{result.report.actions.map((a, i) => <li key={i}><span>{i + 1}</span><div><strong>{a.title}</strong><small>{a.urgency === 'now' ? '지금 확인' : a.urgency === 'today' ? '오늘 할 일' : '이어서 진행'}</small></div><Icon name="chevron" size={13} /></li>)}</ol>
               ) : n.kind === 'source' ? (
-                <div className="source-list">{result.rules.map(r => <div key={r.id}><span className="source-dot" /><span>{r.publisher}</span><Icon name="link" size={12} /></div>)}<small>일반 안내 · 사건별 적용 확인 필요</small></div>
+                <div className="source-list">{result.rules.map(r => <div key={r.id}><span className="source-dot" /><span>{r.publisher}</span><Icon name="link" size={12} /></div>)}<small>일반 안내 · 내 사건에 맞는지 확인 필요</small></div>
               ) : (
                 <><p>{n.text}</p><div className="node-foot">{n.kind === 'question' ? <><span className="amber-dot" />{result.report.questions.length}가지 확인이 필요해요</> : <><span className="tiny-dot" />입력 자료에서 확인<Icon name="chevron" size={12} /></>}</div></>
               )}
@@ -121,7 +121,7 @@ export function Board({ result, onAnswer }: { result: CaseResult; onAnswer: (que
           <div className="inspector-body">
             <h2>{activeNode.title}</h2>
             {activeNode.kind === 'fact' ? (
-              <><span className="detail-label">입력 자료</span><blockquote>{result.parsed.facts[activeNode.index!].quote}</blockquote><span className="detail-label">연결한 내용</span><p>{activeNode.text}</p><div className="detail-callout">사용자가 제공한 내용입니다. 거래의 실제 상태는 카드 앱이나 원본 자료와 대조하세요.</div></>
+              <><span className="detail-label">입력 자료</span><blockquote>{result.parsed.facts[activeNode.index!].quote}</blockquote><span className="detail-label">연결한 내용</span><p>{activeNode.text}</p><div className="detail-callout">직접 입력한 내용이에요. 실제 거래 상태는 카드 앱이나 원본과 대조해 주세요.</div></>
             ) : activeNode.kind === 'question' ? (
               result.report.questions.map((q, i) => <section key={i}><span className="detail-label">질문 0{i + 1}</span><h3>{q.question}</h3><p>{q.why}</p><button className="textlink" onClick={() => { onAnswer(q.question); setSelected(null); }}>답변 추가하기 <Icon name="arrow" size={14} /></button></section>)
             ) : activeNode.kind === 'source' ? (

@@ -16,8 +16,8 @@ function ParsedPreview({ text }: { text: string }) {
   if (parts.length === 0 && !n.suspicious) return null;
   return (
     <div className={`slot__parsed ${n.suspicious ? 'warn' : ''}`}>
-      <span className="label">{n.suspicious ? '주의' : '문자에서 읽음'}</span>
-      {n.suspicious ? <span>국외·국제발신 문자입니다. 링크를 누르지 말고 카드사 대표번호로 확인하세요.</span> : parts.map((p, i) => <span key={i} className="chip">{p}</span>)}
+      <span className="label">{n.suspicious ? '주의' : '문자에서 읽었어요'}</span>
+      {n.suspicious ? <span>국외·국제발신 문자예요. 링크는 누르지 말고 카드사 대표번호로 확인해 주세요.</span> : parts.map((p, i) => <span key={i} className="chip">{p}</span>)}
     </div>
   );
 }
@@ -53,7 +53,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
           <div className="nameplate">
             <p className="nameplate__class">접수 · 첫 72시간</p>
             <h1 className="nameplate__line">어떤 결제 문제가<br />있었나요?</h1>
-            <p className="nameplate__sub">해외 AI·클라우드·구독 결제의 이상 청구 대응 · 있는 자료만 채워도 됩니다</p>
+            <p className="nameplate__sub">해외 AI·클라우드·구독 결제가 이상하다면, 있는 자료만 넣어도 괜찮아요</p>
           </div>
           <div className="stamp" aria-hidden="true"><div className="stamp__inner"><span className="stamp__top">접수 창구</span><span className="stamp__date">{today()}</span><span className="stamp__bottom">분쟁72</span></div></div>
 
@@ -74,7 +74,7 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
             ))}
             <div className="attachments">
               <div className="attachments__head">
-                <span className="slot__h"><Icon name="file" size={14} />사진 · 텍스트 첨부<span className="right">{images.length}/{MAX_IMAGES}장</span></span>
+                <span className="slot__h"><Icon name="file" size={14} />사진 · 텍스트 파일<span className="right">{images.length}/{MAX_IMAGES}장</span></span>
                 <button type="button" className="ghostbtn small" onClick={() => upload.current?.click()} disabled={images.length >= MAX_IMAGES}><Icon name="plus" size={14} /> 사진·txt 추가</button>
               </div>
               {images.length > 0 && (
@@ -87,10 +87,10 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
                   ))}
                 </ul>
               )}
-              <p className="attachments__hint">카드 문자, 청구 메일, 거래내역·사용량 화면 캡처를 올리면 사진 속 글자를 읽어 분석에 넣습니다. 사진은 자동 마스킹되지 않으니 카드번호·이름은 가리고 올려 주세요.</p>
+              <p className="attachments__hint">카드 문자나 청구 화면을 캡처해 올리면 글자를 읽어서 같이 분석해요. 사진은 자동으로 가려지지 않으니 카드번호와 이름은 지우고 올려 주세요.</p>
             </div>
             <div className="entry__actions">
-              <span className="entry__note"><Icon name="shield" size={14} /> 보내기 전에 마스킹 결과를 확인합니다</span>
+              <span className="entry__note"><Icon name="shield" size={14} /> 보내기 전에 가려진 내용을 먼저 보여드려요</span>
               <div className="entry__tools">
                 <button type="submit" className="inkbtn" disabled={busy || !canSubmit}>분석 시작 <span className="hint">Ctrl + Enter</span></button>
               </div>
@@ -99,10 +99,10 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
           {error && <p className="error" role="alert">{error}</p>}
         </div>
 
-        <div className="perforation" aria-hidden="true"><span className="perforation__rule">예시 사건 · 키 없이 열람</span></div>
+        <div className="perforation" aria-hidden="true"><span className="perforation__rule">예시 사건 · 바로 열어볼 수 있어요</span></div>
 
         <div className="stub is-ready">
-          <p className="stub__keep">합성 사례 · API 호출 없음</p>
+          <p className="stub__keep">미리 만들어 둔 예시 · AI 호출 없음</p>
           <div className="samples">
             {SAMPLES.map((s, i) => (
               <button type="button" key={s.id} className="sample" onClick={() => onSample(i)}>
@@ -118,9 +118,9 @@ export function Landing({ slots, setSlot, onSubmit, onSample, onUpload, images, 
       </section>
 
       <section className="conditions">
-        <h2 className="conditions__h">이용 안내</h2>
-        <p>카드 알림 문자가 가장 중요한 자료입니다. 거래일, 금액, 가맹점 표기가 거기서 나옵니다. 청구 메일은 발신 주소까지 함께 붙여넣으면 도메인을 대조합니다. 번호·이메일·API 키 형태는 전송 전에 자동으로 가립니다.</p>
-        <p>이 서비스는 진단과 서류 준비까지 돕습니다. 발송과 카드사 접수는 직접 결정하세요. 결과는 검토용이며 환불 권리나 신청 기한을 확정하지 않습니다.</p>
+        <h2 className="conditions__h">이렇게 써 보세요</h2>
+        <p>카드 알림 문자가 제일 중요해요. 거래일, 금액, 가맹점 표기가 거기서 나와요. 청구 메일은 보낸 주소까지 같이 넣으면 진짜 보낸 곳인지 대조해요. 전화번호, 이메일, API 키 모양은 보내기 전에 자동으로 가려요.</p>
+        <p>분쟁72는 상황을 정리하고 서류를 준비하는 데까지 도와요. 보내고 접수하는 건 직접 결정해요. 결과는 검토용이고, 환불 권리나 신청 기한을 확정하지 않아요.</p>
       </section>
 
       <footer className="colophon">

@@ -41,7 +41,7 @@ function IssuerGuide({ issuer, issuerId, setIssuerId, result }: { issuer: Issuer
     return (
       <section className="sheet sheet--tint issuer-empty">
         <div className="sheet__h"><Icon name="building" size={14} /> 카드사 접수 안내</div>
-        <p>카드사를 고르면 그 카드사의 접수 채널, 기한 안내, 필요 서류, 처리 기간을 보여주고 아래 신청서 항목에 사유 명칭을 맞춥니다.</p>
+        <p>카드사를 고르면 그 카드사의 접수 채널, 기한 안내, 필요한 서류, 처리 기간을 보여드려요. 아래 신청서의 사유 이름도 맞춰 드려요.</p>
         <div className="issuer-pick"><IssuerSelect value={issuerId} onChange={setIssuerId} /></div>
       </section>
     );
@@ -58,7 +58,7 @@ function IssuerGuide({ issuer, issuerId, setIssuerId, result }: { issuer: Issuer
         <div className="details__cell"><dt>고객센터</dt><dd><span className="mono">{issuer.phone}</span></dd></div>
         <div className="details__cell"><dt>기한 안내</dt><dd className="small">{issuer.deadline}</dd></div>
         <div className="details__cell"><dt>처리 기간</dt><dd className="small">{issuer.processing}</dd></div>
-        <div className="details__cell"><dt>이 사건의 사유 명칭</dt><dd className="small">{reason ?? '목록에서 가장 가까운 항목 선택'}</dd></div>
+        <div className="details__cell"><dt>이 사건의 사유 이름</dt><dd className="small">{reason ?? '목록에서 가장 가까운 항목을 골라 주세요'}</dd></div>
       </dl>
       <div className="grid-2 guide-grid">
         <div>
@@ -83,7 +83,7 @@ function IssuerGuide({ issuer, issuerId, setIssuerId, result }: { issuer: Issuer
           )}
           {issuer.documents.length > 0 && (
             <>
-              <p className="label label--strong">필요 서류</p>
+              <p className="label label--strong">필요한 서류</p>
               <ul className="guide-list">
                 {issuer.documents.map(d => <li key={d}><span className="dot" />{d}</li>)}
               </ul>
@@ -125,16 +125,16 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
               <div className="caution"><Icon name="alert" size={14} /><p>{mapping.caution}</p></div>
             </>
           ) : (
-            <p className="empty">유형이 확정되지 않아 사유코드를 고르지 않았습니다. 진단 단계의 질문에 답하고 다시 분석하면 후보가 나옵니다.</p>
+            <p className="empty">유형이 아직 정해지지 않아서 사유코드를 고르지 않았어요. 진단의 질문에 답하고 다시 분석하면 후보가 나와요.</p>
           )}
-          <p className="fine">확정이 아니라 상담용 후보입니다. 카드사가 국제브랜드 규정에 따라 최종 결정합니다.</p>
+          <p className="fine">확정이 아니라 상담할 때 쓰는 후보예요. 최종 결정은 카드사가 국제브랜드 규정에 따라 해요.</p>
         </section>
 
         <section className="sheet">
           <div className="sheet__h"><Icon name="check" size={14} /> 증빙 준비도</div>
-          <div className="readiness"><b>{readiness.pct}%</b><span>{readiness.done} / {readiness.total} 준비됨</span></div>
+          <div className="readiness"><b>{readiness.pct}%</b><span>{readiness.done} / {readiness.total} 준비됐어요</span></div>
           <div className="meter big"><div style={{ width: `${readiness.pct}%` }} /></div>
-          {evidence.length === 0 ? <p className="empty">유형이 정해지면 체크리스트가 생깁니다.</p> : (
+          {evidence.length === 0 ? <p className="empty">유형이 정해지면 체크리스트가 생겨요.</p> : (
             <ul className="checks">
               {evidence.map(item => {
                 const id = `ev:${item.id}`;
@@ -150,7 +150,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
               })}
             </ul>
           )}
-          <p className="fine">입력한 단서에서 찾은 항목은 미리 체크했습니다. 실제 파일을 확보했는지 직접 확인하세요.</p>
+          <p className="fine">입력한 내용에서 찾은 항목은 미리 체크해 뒀어요. 실제 파일이 있는지는 직접 확인해 주세요.</p>
         </section>
       </div>
 
@@ -164,7 +164,7 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
             {form.map(f => <tr key={f.label}><th>{f.label}</th><td>{f.value}</td></tr>)}
           </tbody>
         </table>
-        <p className="fine">{issuer ? `${issuer.name} 양식은 접수 화면에서 받아 위 항목을 옮겨 적으세요.` : '카드사마다 양식과 접수 채널이 다릅니다. 위에서 카드사를 고르면 채널과 사유 명칭을 맞춰 줍니다.'}{merchant?.processor ? ' 결제대행 표기라서 실제 판매자 이름을 함께 적어야 합니다.' : ''}</p>
+        <p className="fine">{issuer ? `${issuer.name} 양식은 접수 화면에서 받아서 위 항목을 옮겨 적으면 돼요.` : '카드사마다 양식과 접수 채널이 달라요. 위에서 카드사를 고르면 채널과 사유 이름을 맞춰 드려요.'}{merchant?.processor ? ' 결제대행 표기라서 실제 판매자 이름도 같이 적어야 해요.' : ''}</p>
       </section>
 
       <section className="ticket" aria-label="제출 초안">
@@ -177,9 +177,9 @@ export function Package({ result, merchant, mapping, evidence, checks, toggle, r
             {(Object.keys(DRAFT_LABEL) as Draft[]).map(t => <button role="tab" aria-selected={draft === t} key={t} onClick={() => setDraft(t)}>{DRAFT_LABEL[t]}</button>)}
           </div>
           <pre className="draft">{report.drafts[draft]}</pre>
-          <p className="fine">사실관계와 [직접 입력] 빈칸을 검토한 뒤 직접 보내세요. 이 서비스는 발송과 접수를 대신하지 않습니다.</p>
+          <p className="fine">사실관계와 [직접 입력] 빈칸을 확인한 뒤 직접 보내 주세요. 분쟁72는 대신 보내거나 접수하지 않아요.</p>
         </div>
-        <div className="perforation" aria-hidden="true"><span className="perforation__rule">Tear here · 이 부분을 보관하세요</span></div>
+        <div className="perforation" aria-hidden="true"><span className="perforation__rule">Tear here · 이 부분은 보관해 두세요</span></div>
         <div className="stub">
           <p className="stub__keep">사건 파일 · 패키지 요약</p>
           <dl className="details" style={{ marginTop: 0 }}>

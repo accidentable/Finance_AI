@@ -46,24 +46,24 @@ export function Plan({ result, plan, checks, toggle, txDate, setTxDate, deadline
                 <span className="leg__station">카드사 접수 참고 기한</span>
                 <div className="deadline__row">
                   <label className="date-field">
-                    <span>{noPosting ? '매입일 (아직 없음)' : '거래일'}</span>
+                    <span>{noPosting ? '매입일 (아직 없어요)' : '거래일'}</span>
                     <input type="date" value={txDate} onChange={e => setTxDate(e.target.value)} aria-label="거래일" />
                   </label>
                   <div className={`dday ${tone}`}>
                     <b>{dday}</b>
-                    <span>{deadlineRef ? `${deadlineRef.due} 까지 · 거래일 + ${REFERENCE_DAYS}일` : noPosting ? '매입이 생기면 그 날짜를 입력하세요' : '거래일을 입력하면 계산합니다'}</span>
+                    <span>{deadlineRef ? `${deadlineRef.due}까지 · 거래일 + ${REFERENCE_DAYS}일` : noPosting ? '매입이 생기면 그 날짜를 넣어 주세요' : '거래일을 넣으면 계산해요'}</span>
                   </div>
                 </div>
               </div>
             </li>
           </ol>
-          <p className="fine">{noPosting ? `${result.deadline.note} ` : ''}이 날짜는 국제브랜드 규정의 통상 {REFERENCE_DAYS}일을 거래일에 더한 참고치입니다. 사유별 기준일과 카드사 접수 요건이 달라 실제 기한은 카드사에서 확인해야 합니다.</p>
+          <p className="fine">{noPosting ? `${result.deadline.note} ` : ''}이 날짜는 국제브랜드 규정의 통상 {REFERENCE_DAYS}일을 거래일에 더한 참고치예요. 사유마다 기준일이 다르고 카드사 접수 요건도 달라서, 실제 기한은 카드사에서 확인해야 해요.</p>
         </div>
         <div className="deadline__side">
           <div className="sheet__h"><Icon name="check" size={14} /> 진행</div>
           <b>{done}<small>/{total}</small></b>
           <div className="meter"><div style={{ width: `${total ? (done / total) * 100 : 0}%` }} /></div>
-          <small>완료한 단계는 저장 버튼으로 이 브라우저에 보관됩니다.</small>
+          <small>완료한 단계는 저장 버튼을 누르면 이 브라우저에 남아요.</small>
         </div>
       </section>
 

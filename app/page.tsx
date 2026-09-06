@@ -84,20 +84,20 @@ export default function Page() {
     setSlots({ ...s.slots });
   }
   function prepare(text: string) {
-    if (text.trim().length < 20 && images.length === 0) { setError('카드 문자나 상황 설명을 합쳐 20자 이상 적거나 사진을 첨부해 주세요.'); return; }
-    if (text.length > 20000) { setError('한 사건의 내용은 20,000자 이내로 나누어 주세요.'); return; }
+    if (text.trim().length < 20 && images.length === 0) { setError('카드 문자나 상황 설명을 20자 이상 적거나 사진을 올려 주세요.'); return; }
+    if (text.length > 20000) { setError('한 사건은 20,000자까지만 넣을 수 있어요. 나눠서 올려 주세요.'); return; }
     setError('');
     setReview(maskText(text));
   }
   async function analyze(text: string) {
-    setReview(null); setBusy(true); setLoadStage(0); setProgress('사건의 단서를 읽고 있습니다'); setError('');
+    setReview(null); setBusy(true); setLoadStage(0); setProgress('사건의 단서를 읽고 있어요'); setError('');
     const controller = new AbortController();
     abort.current = controller;
     let finished = false;
     try {
       const attached = result ? [] : images; // 후속 분석에는 사진을 다시 보내지 않는다. 옮겨 적은 글이 history에 있다.
       const response = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: text, issuerId: issuerId || undefined, images: attached.length ? attached : undefined }), signal: controller.signal });
-      if (!response.ok) { const body = await response.json(); throw new Error(body.error || '분석을 시작하지 못했습니다.'); }
+      if (!response.ok) { const body = await response.json(); throw new Error(body.error || '분석을 시작하지 못했어요.'); }
       const reader = response.body?.getReader();
       if (!reader) throw new Error('분석 연결을 확인해 주세요.');
       const decoder = new TextDecoder();
@@ -127,17 +127,17 @@ export default function Page() {
           }
         }
       }
-      if (!finished) throw new Error('연결이 중단됐습니다. 입력을 유지했으니 다시 시도해 주세요.');
+      if (!finished) throw new Error('연결이 끊겼어요. 입력은 그대로 있으니 다시 시도해 주세요.');
     } catch (err) {
-      if (!controller.signal.aborted) setError(err instanceof Error ? err.message : '분석 중 오류가 발생했습니다.');
+      if (!controller.signal.aborted) setError(err instanceof Error ? err.message : '분석 중에 문제가 생겼어요.');
     } finally { setBusy(false); }
   }
   function save() {
     try {
       localStorage.setItem(STORE, JSON.stringify({ result, history, slots, revision, checks, txDate, issuerId, expires: Date.now() + 7 * 86400000 }));
       setSaved(true);
-      setToast('이 브라우저에 7일간 저장했어요. 체크 상태도 함께 저장됩니다.');
-    } catch { setToast('브라우저 저장 공간을 사용할 수 없습니다.'); }
+      setToast('이 브라우저에 7일간 저장했어요. 체크 상태도 같이 저장돼요.');
+    } catch { setToast('브라우저 저장 공간을 쓸 수 없어요.'); }
   }
   function restore() {
     try {
@@ -151,23 +151,23 @@ export default function Page() {
       setPrevious(null); setRevision(Number(data.revision) || 1); setStage('diagnose');
       applyResult(restored, String(data.history || '').slice(0, 20000), { checks: data.checks || {}, txDate: typeof data.txDate === 'string' ? data.txDate : undefined, issuerId: typeof data.issuerId === 'string' ? data.issuerId : '' });
       if (data.slots && typeof data.slots === 'object') setSlots({ ...EMPTY_SLOTS, ...data.slots });
-    } catch { localStorage.removeItem(STORE); setSaved(false); setToast('저장된 사건이 만료되었거나 열 수 없습니다.'); }
+    } catch { localStorage.removeItem(STORE); setSaved(false); setToast('저장한 사건이 만료됐거나 열 수 없어요.'); }
   }
   async function copy(text: string, label: string) {
     try { await navigator.clipboard.writeText(text); setToast(`${label}을(를) 복사했어요.`); }
-    catch { setToast('복사 권한이 없습니다. 내용을 직접 선택해 복사해 주세요.'); }
+    catch { setToast('복사 권한이 없어요. 내용을 직접 골라서 복사해 주세요.'); }
   }
   function exportMarkdown() {
     if (!result) return;
     const { parsed, report } = result;
     const lines = [
       `# ${parsed.title}`, '',
-      result.mode === 'demo' ? '> 합성 예시 · 실제 분석 아님' : '> 분쟁72 분석 결과 · 검토용',
+      result.mode === 'demo' ? '> 미리 만든 예시 · 실제 분석 아님' : '> 분쟁72 분석 결과 · 검토용',
       '', `- 가맹점: ${merchant ? merchant.name : parsed.merchant || '미확인'}${parsed.descriptor ? ` (표기 ${parsed.descriptor})` : ''}`,
       `- 금액: ${parsed.amount || '확인 필요'}`, `- 거래 상태: ${PAYMENT_LABEL[parsed.paymentStatus]}`, `- 유형: ${CASE_LABEL[parsed.caseType]}`,
       `- 참고 기한: ${deadlineRef ? `${deadlineRef.due} (D${deadlineRef.daysLeft < 0 ? '+' : '-'}${Math.abs(deadlineRef.daysLeft)}) · 카드사 확인 필요` : '기준일 확인 필요'}`,
       '', '## 판단 요약', report.headline, '', report.explanation,
-      ...(report.basis.length ? ['', '### 판단 근거', ...report.basis.map(b => { const ref = result.references.find(r => r.id === b.refId); return `- ${b.point}${ref ? ` — [${ref.title}](${ref.url})` : ''}`; })] : []),
+      ...(report.basis.length ? ['', '### 판단 근거', ...report.basis.map(b => { const ref = result.references.find(r => r.id === b.refId); return `- ${b.point}${ref ? ` · [${ref.title}](${ref.url})` : ''}`; })] : []),
       '', '## 탐지된 신호', ...(parsed.signals.length ? parsed.signals.map(s => `- ${SIGNAL_LABEL[s.kind]}: "${s.evidence}"`) : ['- 없음']),
       '', '## 확인한 사실', ...parsed.facts.map(f => `- ${f.label}: ${f.value}\n  > ${f.quote}`),
       '', '## 확인할 질문', ...report.questions.map(q => `- ${q.question} (${q.why})`),
@@ -190,7 +190,7 @@ export default function Page() {
       '', '## 영문 문의 초안', '```', report.drafts.email, '```',
       '', '## 국문 사실 정리', '```', report.drafts.statement, '```',
       '', '## 타임라인', '```', report.drafts.timeline, '```',
-      '', '## 참고 자료', ...result.rules.map(r => `- [${r.title}](${r.url}) — ${r.publisher} · ${r.scope}`),
+      '', '## 참고 자료', ...result.rules.map(r => `- [${r.title}](${r.url}) · ${r.publisher} · ${r.scope}`),
       ...(merchant ? [
         '', `## ${merchant.name} 정책 요약 (${VERIFIED_LABEL[merchant.verified]}, 조회 ${merchant.sources[0]?.accessed ?? ''})`,
         `- 환불 조건: ${merchant.refund}`, `- 해지 규칙: ${merchant.cancellation}`, `- 미승인·오청구 창구: ${merchant.unauthorized}`,
@@ -210,17 +210,17 @@ export default function Page() {
     let added = 0;
     for (const file of files) {
       if (isImageFile(file)) {
-        if (images.length + added >= MAX_IMAGES) { setError(`사진은 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`); break; }
+        if (images.length + added >= MAX_IMAGES) { setError(`사진은 ${MAX_IMAGES}장까지 올릴 수 있어요.`); break; }
         try {
           const img = await downscaleImage(file);
           setImages(list => list.length >= MAX_IMAGES ? list : [...list, img]);
           added += 1;
-        } catch { setError('사진을 읽지 못했습니다. JPG, PNG, WEBP 파일인지 확인해 주세요.'); }
+        } catch { setError('사진을 읽지 못했어요. JPG, PNG, WEBP 파일인지 확인해 주세요.'); }
         continue;
       }
-      if (file.size > 80000) { setError('80KB 이하 텍스트 파일을 추가해 주세요.'); continue; }
+      if (file.size > 80000) { setError('텍스트 파일은 80KB까지 넣을 수 있어요.'); continue; }
       const t = await file.text();
-      if (combined.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘습니다.'); continue; }
+      if (combined.length + t.length > 20000) { setError('전체 입력이 20,000자를 넘었어요.'); continue; }
       setSlots(s => ({ ...s, mail: s.mail + (s.mail ? '\n\n' : '') + t }));
     }
   }
@@ -238,10 +238,10 @@ export default function Page() {
           <div className="masthead__status">
             {result ? (
               <>
-                <span className="masthead__confirmed"><i className={`masthead__dot ${result.mode}`} />{result.mode === 'demo' ? '합성 예시' : '분석 완료'}<span className="long"> — {result.parsed.merchant || '사건'} · v{revision}</span></span>
+                <span className="masthead__confirmed"><i className={`masthead__dot ${result.mode}`} />{result.mode === 'demo' ? '예시' : '분석 완료'}<span className="long"> · {result.parsed.merchant || '사건'} · v{revision}</span></span>
                 <div className="masthead__actions">
                   <button className="ghostbtn small" onClick={save}><Icon name="download" size={13} /> 저장</button>
-                  {saved && <button className="ghostbtn small" onClick={() => { localStorage.removeItem(STORE); setSaved(false); setToast('이 브라우저에 저장한 사건을 삭제했어요.'); }}>저장본 삭제</button>}
+                  {saved && <button className="ghostbtn small" onClick={() => { localStorage.removeItem(STORE); setSaved(false); setToast('이 브라우저에 저장한 사건을 지웠어요.'); }}>저장본 삭제</button>}
                   <button className="ghostbtn small" onClick={exportMarkdown}>내보내기 →</button>
                 </div>
               </>
