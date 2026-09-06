@@ -6,8 +6,8 @@
 
 ```bash
 # spec_*.py의 'team', 'members', 'content'를 고친 뒤 실행.
-python tools/submit/fill_hwpx.py tools/submit/templates/plan.hwpx "docs/submit/(첨부1) 2026 금융 AI Challenge 공모전 기획서_따이호.hwpx" tools/submit/spec_plan.py
-python tools/submit/fill_hwpx.py tools/submit/templates/spec.hwpx "docs/submit/(첨부2) 2026 금융 AI Challenge 기능명세서_따이호.hwpx" tools/submit/spec_spec.py
+python tools/submit/fill_hwpx.py tools/submit/templates/plan.hwpx "docs/submit/2026 금융 AI Challenge 기획서_따이호.hwpx" tools/submit/spec_plan.py
+python tools/submit/fill_hwpx.py tools/submit/templates/spec.hwpx "docs/submit/2026 금융 AI Challenge 기능명세서_따이호.hwpx" tools/submit/spec_spec.py
 ```
 
 PDF는 한글(Hancom Office) COM으로 변환한다. PowerShell:
